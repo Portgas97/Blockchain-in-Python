@@ -1,5 +1,5 @@
 from Block import Block
-import Users
+import User
 
 
 def add_block(transaction):
@@ -21,11 +21,11 @@ add_block(["Satoshi sent 1 BTC to Ivan", "Maria sent 5 MTC to Jenny", "Satoshi s
 for i in range(len(BlockChain)):
     print(BlockChain[i].block_hash)
 
-public, private = Users.newkeys(1024)
+public, private = User.newkeys(1024)
 
-c = Users.crypt("ciao".encode(), public)
+c = User.crypt("ciao".encode(), public)
 print(c)
-d = Users.decrypt(c, private)
+d = User.decrypt(c, private)
 print(d.decode())
 
 ciao=private.exportKey()
