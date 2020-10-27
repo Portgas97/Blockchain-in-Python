@@ -1,6 +1,8 @@
 from Block import Block
 import User
+from Listener import ThreadListener
 import threading
+
 
 
 def add_block(transaction):
@@ -32,3 +34,6 @@ print(d.decode())
 ciao=private.exportKey()
 print(ciao.decode())
 
+listener=ThreadListener()
+listener.start()
+listener.join()
