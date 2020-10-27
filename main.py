@@ -1,10 +1,11 @@
 from Block import Block
 import User
+import threading
 
 
 def add_block(transaction):
     if not BlockChain:
-        new_block = Block("Chanceller on the brink...", transaction)
+        new_block = Block("Chancellor on the brink...", transaction)
         BlockChain.insert(0, new_block)
     else:
         new_block = Block(BlockChain[0].block_hash, transaction)
