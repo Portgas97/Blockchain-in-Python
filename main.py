@@ -2,8 +2,8 @@ from Block import Block
 import User
 from Listener import ThreadListener
 import threading
-
-
+import socket
+import time
 
 def add_block(transaction):
     if not BlockChain:
@@ -15,7 +15,6 @@ def add_block(transaction):
 
 
 BlockChain = []
-
 
 add_block(["Satoshi sent 1 BTC to Ivan", "Maria sent 5 MTC to Jenny", "Satoshi sent 5 BTC to Hal Finney"])
 
@@ -31,9 +30,15 @@ print(c)
 d = User.decrypt(c, private)
 print(d.decode())
 
-ciao=private.exportKey()
+ciao = private.exportKey()
 print(ciao.decode())
 
-listener=ThreadListener()
+listener = ThreadListener()
 listener.start()
-listener.join()
+
+prova=["Satoshi sent 1 BTC to Ivan", "Maria sent 5 MTC to Jenny", "Satoshi sent 5 BTC to Hal Finney"]
+
+time.sleep(1)
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+sock.sendto("".join(prova).encode(), ("224.51.105.104", 1000))
