@@ -74,8 +74,8 @@ def verify(message, signature, pub_key):
 def register():
     print("The registration is completed!")
     public, private = newkeys(2048)
-    # print("Your public key is:")
-    # print(public.exportKey().decode())
+    print("Your public key is:")
+    print(str(public.n)+"_"+str(public.e))
     print("Your private key is:")
     key = [str(private.n), str(private.e), str(private.d)]
     print(str(private.n) + " " + str(private.e) + " " + str(private.d))
@@ -92,19 +92,22 @@ def login(key):
     return check_key.publickey(), check_key
 
 
-def send_money(private_key, sender):
+def send_money(private_key: Crypto.PublicKey.RSA.RsaKey, sender):
     print("Insert the public key or the receiver:")
     receiver = input()
     print("Insert the amount of money you want to send:")
     amount = input()
     # TODO check input data
-    #new_transaction = Transaction(sender, receiver, amount)
-    new_transaction="pippo"
+    receiver_numbers=receiver.split("_")
+    receiver_key=RSA.construct([int(receiver_numbers[0]),int(receiver_numbers[1])])
+    receiver=receiver_key.exportKey
+    new_transaction = sender.exportKey().decode()+"&"+amount+"&"+receiver_key.exportKey().decode()
     sign_of_transaction = sign(new_transaction.encode(), private_key, "SHA256")
-    packet_to_send = [new_transaction, sign_of_transaction]
+    packet_to_send = new_transaction.encode()+ "&&".encode()+sign_of_transaction
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
     sock.sendto(packet_to_send, ("224.0.0.0", 2000))
+
 
 def verify_transaction(transaction: Transaction):
     public = transaction[0].sender

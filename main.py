@@ -1,4 +1,7 @@
+import socket
+
 import User
+from Listener import ThreadListener
 
 
 #add_block(["Satoshi sent 1 BTC to Ivan", "Maria sent 5 MTC to Jenny", "Satoshi sent 5 BTC to Hal Finney"])
@@ -6,6 +9,9 @@ import User
 #for i in range(len(BlockChain)):
 #    print(BlockChain[i].block_hash)
 #public, private = User.newkeys(1024)
+
+listener = ThreadListener()
+listener.start()
 
 print("Welcome to DSSCoin, type register or login:")
 op=input()
