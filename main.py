@@ -10,18 +10,17 @@ import User
 print("Welcome to DSSCoin, type register or login:")
 op=input()
 if op == "register":
-    User.register()
+    public, private = User.register()
 else:
     if op == "login":
         print("Insert your private key:")
         key = input();
-        User.login(key)
+        public, private = User.login(key)
     else:
         print("Wrong operation! I'm exiting with error")
         exit(-1)
 
-
-
+User.send_money(private, public)
 #c = User.crypt("ciao".encode(), public)
 #print(c)
 #d = User.decrypt(c, private)
