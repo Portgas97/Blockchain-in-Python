@@ -23,18 +23,20 @@ add_block(["Satoshi sent 1 BTC to Ivan", "Maria sent 5 MTC to Jenny", "Satoshi s
 
 add_block(["Satoshi sent 1 BTC to Ivan", "Maria sent 5 MTC to Jenny", "Satoshi sent 5 BTC to Hal Finney"])
 
-for i in range(len(BlockChain)):
-    print(BlockChain[i].block_hash)
+#for i in range(len(BlockChain)):
+#    print(BlockChain[i].block_hash)
 
-public, private = User.newkeys(1024)
+#public, private = User.newkeys(1024)
 
+print("Welcome to DSSCoin, type 1 if you want to register or type 2 if you want to login:")
+User.register();
 #c = User.crypt("ciao".encode(), public)
 #print(c)
 #d = User.decrypt(c, private)
 #print(d.decode())
 
-ciao = private.exportKey()
-print(ciao.decode())
+#ciao = public.exportKey()
+#print(ciao.decode())
 
 #listener = ThreadListener()
 #listener.start()

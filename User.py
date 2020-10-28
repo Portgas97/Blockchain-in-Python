@@ -1,3 +1,4 @@
+import Crypto
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.Signature import PKCS1_v1_5
@@ -8,7 +9,7 @@ from base64 import b64encode, b64decode
 hash = "SHA-256"
 
 def newkeys(keysize):
-    random_generator = Random.new().read
+    random_generator = Crypto.Random.get_random_bytes
     key = RSA.generate(keysize, random_generator)
     private, public = key, key.publickey()
     return public, private
@@ -65,3 +66,14 @@ def verify(message, signature, pub_key):
         digest = MD5.new()
     digest.update(message)
     return signer.verify(digest, signature)
+
+
+def register():
+    print("The registration is completed!")
+    public, private=newkeys(2048)
+    #print("Your public key is:")
+    #print(public.exportKey().decode())
+    print("Your private key is:")
+    key=[str(private.n), str(private.e), str(private.d)]
+    print(str(private.n)+" "+str(private.e)+" "+str(private.d))
+    print("Save your private key or you will not be able to access your wallet again")
