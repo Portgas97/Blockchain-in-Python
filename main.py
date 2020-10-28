@@ -1,8 +1,6 @@
 import User
 
 
-
-
 #add_block(["Satoshi sent 1 BTC to Ivan", "Maria sent 5 MTC to Jenny", "Satoshi sent 5 BTC to Hal Finney"])
 #add_block(["Satoshi sent 1 BTC to Ivan", "Maria sent 5 MTC to Jenny", "Satoshi sent 5 BTC to Hal Finney"])
 #for i in range(len(BlockChain)):
@@ -15,7 +13,9 @@ if op == "register":
     User.register()
 else:
     if op == "login":
-        print("login")
+        print("Insert your private key:")
+        key = input();
+        User.login(key)
     else:
         print("Wrong operation! I'm exiting with error")
         exit(-1)

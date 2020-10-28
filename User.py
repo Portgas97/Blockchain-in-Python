@@ -77,3 +77,11 @@ def register():
     key=[str(private.n), str(private.e), str(private.d)]
     print(str(private.n)+" "+str(private.e)+" "+str(private.d))
     print("Save your private key or you will not be able to access your wallet again!")
+
+
+def login(key):
+    k=key.split()
+    for i in range(len(k)):
+        k[i]=int(k[i])
+    check_key=RSA.construct(k,consistency_check=True)
+    print(check_key.n)
