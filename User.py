@@ -76,4 +76,4 @@ def register():
     print("Your private key is:")
     key=[str(private.n), str(private.e), str(private.d)]
     print(str(private.n)+" "+str(private.e)+" "+str(private.d))
-    print("Save your private key or you will not be able to access your wallet again")
+    print("Save your private key or you will not be able to access your wallet again!")
