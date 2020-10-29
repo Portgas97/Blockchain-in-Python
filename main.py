@@ -1,5 +1,4 @@
 import socket
-
 import User
 from Listener import ThreadListener
 
@@ -13,7 +12,7 @@ from Listener import ThreadListener
 listener = ThreadListener()
 listener.start()
 
-print("Welcome to DSSCoin, type register or login:")
+print("Welcome to DSSCoin, type \'register\' or \'login\':")
 op=input()
 if op == "register":
     public, private = User.register()
@@ -57,4 +56,3 @@ User.send_money(private, public)
 
 #nuova=RSA.construct([n,e,d,p,q],consistency_check=True)
 #print(nuova.exportKey().decode())
-

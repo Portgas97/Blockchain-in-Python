@@ -1,8 +1,14 @@
 import hashlib
+from time import time
+
 
 class Block:
-    def __init__(self, previous_hash, transaction):
-        self.transactions=transaction
+    def __init__(self, index, transactions, nonce, previous_hash):
+
+        self.index = index
+        self.transactions = transactions
+        self.nonce = nonce
         self.previous_hash = previous_hash
-        string_to_hash= "".join(transaction) + previous_hash
-        self.block_hash=hashlib.sha256(string_to_hash.encode()).hexdigest()
+        self.timestamp = time()
+        string_to_hash = "".join(transaction) + previous_hash
+        self.block_hash = hashlib.sha256(string_to_hash.encode()).hexdigest()
