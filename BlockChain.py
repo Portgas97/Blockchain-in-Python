@@ -2,6 +2,7 @@ import hashlib
 from Block import Block
 from Transaction import Transaction
 
+
 # vanno aggiunte le property, corretti gli underscore e scritte le altre funzioni. A cosa serve replace_chain?
 
 class Blockchain:
@@ -12,11 +13,9 @@ class Blockchain:
         self.__chain = []
         self.create_genesis()
 
-
     def create_genesis(self):
         genesis_block = Block(0, self.__current_transactions, 0, '00')
         self.__chain.append(genesis_block)
-
 
     def add_block(self, block):
         if self.validate_block(block, self.last_block):
@@ -27,7 +26,6 @@ class Blockchain:
 
 
 def create_transaction(self, sender, receiver, amount):
-
     transaction = Transaction(sender, receiver, amount)
 
     if transaction.validate():
@@ -37,7 +35,6 @@ def create_transaction(self, sender, receiver, amount):
 
 
 def mine(self, reward_address):
-
     last_block = self.last_block
     index = last_block.index + 1
     previous_hash = last_block.hash
@@ -45,7 +42,7 @@ def mine(self, reward_address):
     nonce = self.generate_proof_of_work(last_block)
 
     # transaction to reward the miner, no sender
-    self.create_transaction(sender = "0", receiver = reward_address, amount = 1)
+    self.create_transaction(sender="0", receiver=reward_address, amount=1)
 
     block = Block(index, self.__current_transactions, nonce, previous_hash)
 
@@ -54,16 +51,17 @@ def mine(self, reward_address):
 
     return None
 
+
 @staticmethod
 def validate_proof_of_work(last_nonce, last_hash, nonce):
     pass
+
 
 def generate_proof_of_work(self, block):
     pass
 
 
 def validate_block(self, current_block, previous_block):
-
     if current_block.index != previous_block.index + 1:
         return False
 
@@ -78,26 +76,32 @@ def validate_block(self, current_block, previous_block):
     # da aggiungere if non valido PoW
     return True
 
+
 def validate_chain(self, chain_to_validate):
     pass
 
+
 def replace_chain(self, new_chain):
     pass
+
 
 @property
 def last_block(self):
     return self.__chain[-1]
 
+
 @property
 def last_transaction(self):
     return self.__current_transactions[-1]
+
 
 @property
 def pending_transactions(self):
     return self.__current_transactions
 
+
 @property
-def full_chain(self)
+def full_chain(self):
     return self.__chain
 
 
