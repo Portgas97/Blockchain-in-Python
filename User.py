@@ -70,7 +70,7 @@ def verify(message, signature, pub_key):
     else:
         digest = MD5.new()
     digest.update(message)
-    return signer.verify(digest, signature)
+    return signer.verify(digest,signature)
 
 
 def register():
@@ -115,21 +115,12 @@ def send_money(private_key: Crypto.PublicKey.RSA.RsaKey, sender):
         "timestamp": new_transaction.timestamp
     }
     message_to_send=json.dumps(packet)
-    sign_of_transaction = sign(message_to_send.encode(), private_key, "SHA256")
-    packet_to_send = {
-        "msg": packet,
-        "sign": sign_of_transaction
-    }
-
-    print(packet_to_send)
-    # receiver_key=RSA.construct([int(receiver_numbers[0]),int(receiver_numbers[1])])
-    # receiver=receiver_key.exportKey
-    # new_transaction = sender.exportKey().decode()+"&"+amount+"&"+receiver_key.exportKey().decode() # chiamata a create_transaction ???
-    # sign_of_transaction = sign(new_transaction.encode(), private_key, "SHA256")
-    # packet_to_send = new_transaction.encode()+ "&&".encode()+sign_of_transaction
-    #sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-    #sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
-    #sock.sendto(packet_to_send, ("224.0.0.0", 2000))
+    sign_of_transaction = sign(packet.__str__().encode(), private_key, "SHA256")
+    print("messaggio user")
+    print(sign_of_transaction)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+    sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+    sock.sendto((message_to_send+"divisore").encode()+sign_of_transaction, ("224.0.0.0", 2000))
 
 
 def verify_transaction(transaction: Transaction):

@@ -2,7 +2,7 @@ import time
 
 
 class Transaction:
-    def __init__(self, sender, amount, receiver):
+    def __init__(self, sender, amount, receiver, timestamp=time.time()):
         """
         Crea una nuova transazione.
         Parametri:
@@ -12,7 +12,7 @@ class Transaction:
         """
         self.sender = sender
         self.receiver = receiver
-        self.timestamp = time.time()
+        self.timestamp = timestamp
         self.amount = amount
 
     def validate(self):

@@ -3,7 +3,7 @@ import socket
 import struct
 from Crypto.PublicKey import RSA
 import User
-
+import json
 class ThreadListener(Thread):
 
     # metodo che rappresenta le attività compiute dal thread
@@ -26,16 +26,17 @@ class ThreadListener(Thread):
 
         while True:
             recv=sock.recv(10240) # non recvfrom per multicasting
-            message_arrived=recv.split(b'&&')
-            sign=message_arrived[1];
-            encrypted_message=message_arrived[0].split(b'&')
-            received_sender_public_key=encrypted_message[0]
-            amount=encrypted_message[1]
-            received_receiver_public_key=encrypted_message[2]
-
-            sender_public_key=RSA.import_key(received_sender_public_key)
-            receiver_public_key=RSA.import_key(received_receiver_public_key)
-            is_valid=User.verify(message_arrived[0],sign,sender_public_key)
+            message_arrived=recv.split(b'divisore')
+            sign=message_arrived[1]
+            message=json.loads(message_arrived[0])
+            print(message)
+            message_sender_n=message["sender_n"]
+            message_sender_e=message["sender_e"]
+            sender_key = RSA.construct([message_sender_n, message_sender_e])
+            is_valid=User.verify(message.__str__().encode(),sign, sender_key)
+            print("messaggio listener")
+            print(sign)
             print("Transiction is valid:"+str(is_valid))
+
 
     # TODO Mining
