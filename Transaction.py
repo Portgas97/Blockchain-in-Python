@@ -2,7 +2,7 @@ import time
 
 
 class Transaction:
-    def __init__(self, sender, receiver, amount):
+    def __init__(self, sender, amount, receiver):
         """
         Crea una nuova transazione.
         Parametri:
@@ -11,7 +11,7 @@ class Transaction:
         - amount (float) è l'ammontare da trasferire
         """
         self.sender = sender
-        self.recevier = receiver
+        self.receiver = receiver
         self.timestamp = time.time()
         self.amount = amount
 

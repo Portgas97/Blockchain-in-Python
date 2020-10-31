@@ -7,7 +7,8 @@ from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA512, SHA384, SHA256, SHA, MD5
 from Crypto import Random
 from base64 import b64encode, b64decode
-import Transaction
+from Transaction import Transaction
+import json
 hash = "SHA-256"
 
 
@@ -54,6 +55,7 @@ def sign(message, priv_key, hashAlg="SHA-256"):
     digest.update(message)
     return signer.sign(digest)
 
+
 # verifica la validità della firma
 def verify(message, signature, pub_key):
     signer = PKCS1_v1_5.new(pub_key)
@@ -75,7 +77,7 @@ def register():
     print("The registration is completed!")
     public, private = newkeys(2048)
     print("Your public key is:")
-    print(str(public.n)+"_"+str(public.e))
+    print(str(public.n) + "_" + str(public.e))
     print("Your private key is:")
     key = [str(private.n), str(private.e), str(private.d)]
     print(str(private.n) + " " + str(private.e) + " " + str(private.d))
@@ -98,15 +100,36 @@ def send_money(private_key: Crypto.PublicKey.RSA.RsaKey, sender):
     print("Insert the amount of money you want to send:")
     amount = input()
     # TODO check input data
-    receiver_numbers=receiver.split("_")
-    receiver_key=RSA.construct([int(receiver_numbers[0]),int(receiver_numbers[1])])
-    receiver=receiver_key.exportKey
-    new_transaction = sender.exportKey().decode()+"&"+amount+"&"+receiver_key.exportKey().decode() # chiamata a create_transaction ???
-    sign_of_transaction = sign(new_transaction.encode(), private_key, "SHA256")
-    packet_to_send = new_transaction.encode()+ "&&".encode()+sign_of_transaction
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-    sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
-    sock.sendto(packet_to_send, ("224.0.0.0", 2000))
+    #chiave pubblica del destinatario
+    tmp = receiver.split("_")
+    n=int(tmp[0])
+    e=int(tmp[1])
+    receiver_public_key = RSA.construct([n,e])
+    new_transaction = Transaction(sender, amount, receiver_public_key)
+    packet = {
+        "sender_n": new_transaction.sender.n,
+        "sender_e": new_transaction.sender.e,
+        "amount": new_transaction.amount,
+        "receiver_n": new_transaction.receiver.n,
+        "receiver_e": new_transaction.receiver.e,
+        "timestamp": new_transaction.timestamp
+    }
+    message_to_send=json.dumps(packet)
+    sign_of_transaction = sign(message_to_send.encode(), private_key, "SHA256")
+    packet_to_send = {
+        "msg": packet,
+        "sign": sign_of_transaction
+    }
+
+    print(packet_to_send)
+    # receiver_key=RSA.construct([int(receiver_numbers[0]),int(receiver_numbers[1])])
+    # receiver=receiver_key.exportKey
+    # new_transaction = sender.exportKey().decode()+"&"+amount+"&"+receiver_key.exportKey().decode() # chiamata a create_transaction ???
+    # sign_of_transaction = sign(new_transaction.encode(), private_key, "SHA256")
+    # packet_to_send = new_transaction.encode()+ "&&".encode()+sign_of_transaction
+    #sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+    #sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+    #sock.sendto(packet_to_send, ("224.0.0.0", 2000))
 
 
 def verify_transaction(transaction: Transaction):
