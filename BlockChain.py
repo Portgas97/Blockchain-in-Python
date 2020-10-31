@@ -75,7 +75,7 @@ def validate_proof_of_work(last_nonce, last_hash, nonce):
 def generate_proof_of_work(self, block):
     while True:
         nonce = 0
-        string_to_hash = "".join(block.transactions) + last_block(self).block_hash + nonce
+        string_to_hash = "".join(block.transactions) + local_blockchain.last_block(self).block_hash + nonce
         first_hash_256 = hashlib.sha256(string_to_hash.encode()).hexdigest()
         second_hash_256 = hashlib.sha256(first_hash_256.encode()).hexdigest()
         if second_hash_256[:Blockchain.difficulty] == "0" * Blockchain.difficulty:
