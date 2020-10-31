@@ -10,5 +10,5 @@ class Block:
         self.nonce = nonce
         self.previous_hash = previous_hash
         self.timestamp = time()
-        string_to_hash = "".join(transaction) + previous_hash
+        string_to_hash = "".join(transactions) + previous_hash
         self.block_hash = hashlib.sha256(string_to_hash.encode()).hexdigest()

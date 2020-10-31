@@ -1,7 +1,7 @@
 import socket
 import User
 from Listener import ThreadListener
-from BlockChain import Blockchain
+from BlockChain import local_blockchain, Blockchain
 
 #add_block(["Satoshi sent 1 BTC to Ivan", "Maria sent 5 MTC to Jenny", "Satoshi sent 5 BTC to Hal Finney"])
 #add_block(["Satoshi sent 1 BTC to Ivan", "Maria sent 5 MTC to Jenny", "Satoshi sent 5 BTC to Hal Finney"])
@@ -11,6 +11,7 @@ from BlockChain import Blockchain
 
 listener = ThreadListener()
 listener.start()
+
 
 print("Welcome to DSSCoin, type \'register\' or \'login\':")
 op=input()
@@ -28,7 +29,7 @@ else:
 #User.send_money(private, public)
 
 if not User.exists_blockchain():
-    Blockchain.create_genesis()
+    Blockchain.create_genesis(local_blockchain)
 else:
     User.update_blockchain()
 

@@ -25,6 +25,20 @@ class Blockchain:
             return True
         return False
 
+    def last_block(self):
+        if not self.__chain:
+            return []
+        return self.__chain[-1]
+
+    def last_transaction(self):
+        return self.__current_transactions[-1]
+
+    def pending_transactions(self):
+        return self.__current_transactions
+
+    def full_chain(self):
+        return self.__chain
+
 
 def create_transaction(self, sender, receiver, amount):
     transaction = Transaction(sender, receiver, amount)
@@ -93,29 +107,9 @@ def replace_chain(self, new_chain):
     pass
 
 
-@property
-def last_block(self):
-    if not self.__chain:
-        return []
-    return self.__chain[-1]
 
-
-@property
-def last_transaction(self):
-    return self.__current_transactions[-1]
-
-
-@property
-def pending_transactions(self):
-    return self.__current_transactions
-
-
-@property
-def full_chain(self):
-    return self.__chain
 
 
 # AGGIUNGI TEST
 
-blockchain = Blockchain()
-blockchain.create_genesis()
+local_blockchain = Blockchain()

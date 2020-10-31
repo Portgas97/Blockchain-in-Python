@@ -134,13 +134,33 @@ def exists_blockchain():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
     sock.sendto("exists".encode(), ("224.0.0.0", 2000))
-    sock.settimeout(1)
+    sock.settimeout(30)
     #dimensione del buffer
-    exists=sock.recv(10240)
+    exists=""
+    try:
+        exists=sock.recv(10240)
+    except:
+        return False
     if exists.decode() == "False":
         return False
     if exists.decode() == "True":
         return True
 
 def update_blockchain():
-
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+    sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+    sock.sendto("update "+BlockChain.last_block().index().encode(), ("224.0.0.0", 2000))
+    sock.settimeout(1)
+    #dimensione del buffer
+    update=sock.recv(10240)
+    if update=="index_error":
+        print("Wrong index")
+        return
+    if update=="Already up to date":
+        print(update)
+        return
+    else:
+        update.decode()
+        dict=json.loads(update)
+        for i in dict:
+            BlockChain.Blockchain.add_block(i)
