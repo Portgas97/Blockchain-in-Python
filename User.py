@@ -9,6 +9,8 @@ from Crypto import Random
 from base64 import b64encode, b64decode
 from Transaction import Transaction
 import json
+import BlockChain
+import time
 hash = "SHA-256"
 
 
@@ -70,7 +72,7 @@ def verify(message, signature, pub_key):
     else:
         digest = MD5.new()
     digest.update(message)
-    return signer.verify(digest,signature)
+    return signer.verify(digest, signature)
 
 
 def register():
@@ -100,11 +102,11 @@ def send_money(private_key: Crypto.PublicKey.RSA.RsaKey, sender):
     print("Insert the amount of money you want to send:")
     amount = input()
     # TODO check input data
-    #chiave pubblica del destinatario
+    # chiave pubblica del destinatario
     tmp = receiver.split("_")
-    n=int(tmp[0])
-    e=int(tmp[1])
-    receiver_public_key = RSA.construct([n,e])
+    n = int(tmp[0])
+    e = int(tmp[1])
+    receiver_public_key = RSA.construct([n, e])
     new_transaction = Transaction(sender, amount, receiver_public_key)
     packet = {
         "sender_n": new_transaction.sender.n,
@@ -114,15 +116,31 @@ def send_money(private_key: Crypto.PublicKey.RSA.RsaKey, sender):
         "receiver_e": new_transaction.receiver.e,
         "timestamp": new_transaction.timestamp
     }
-    message_to_send=json.dumps(packet)
+    message_to_send = json.dumps(packet)
     sign_of_transaction = sign(packet.__str__().encode(), private_key, "SHA256")
     print("messaggio user")
     print(sign_of_transaction)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
-    sock.sendto((message_to_send+"divisore").encode()+sign_of_transaction, ("224.0.0.0", 2000))
+    sock.sendto((message_to_send + "divisore").encode() + sign_of_transaction, ("224.0.0.0", 2000))
 
 
 def verify_transaction(transaction: Transaction):
     public = transaction[0].sender
     return verify(transaction[0], transaction[1], public)
+
+
+def exists_blockchain():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+    sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+    sock.sendto("exists".encode(), ("224.0.0.0", 2000))
+    sock.settimeout(1)
+    #dimensione del buffer
+    exists=sock.recv(10240)
+    if exists.decode() == "False":
+        return False
+    if exists.decode() == "True":
+        return True
+
+def update_blockchain():
+

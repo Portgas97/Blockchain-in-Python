@@ -6,6 +6,7 @@ from Transaction import Transaction
 # vanno aggiunte le property, corretti gli underscore e scritte le altre funzioni. A cosa serve replace_chain?
 
 class Blockchain:
+    difficulty = 4
 
     def __init__(self):
         #
@@ -28,7 +29,7 @@ class Blockchain:
 def create_transaction(self, sender, receiver, amount):
     transaction = Transaction(sender, receiver, amount)
 
-    if transaction.validate():
+    if transaction.validate():  # todo aggiungere controllo soldi disponibili a validate()
         self.__current_transactions.append(transaction)
         return transaction, True
     return None, False
@@ -58,7 +59,14 @@ def validate_proof_of_work(last_nonce, last_hash, nonce):
 
 
 def generate_proof_of_work(self, block):
-    pass
+    while True:
+        nonce = 0
+        string_to_hash = "".join(block.transactions) + last_block(self).block_hash + nonce
+        first_hash_256 = hashlib.sha256(string_to_hash.encode()).hexdigest()
+        second_hash_256 = hashlib.sha256(first_hash_256.encode()).hexdigest()
+        if second_hash_256[:Blockchain.difficulty] == "0" * Blockchain.difficulty:
+            return second_hash_256, nonce
+        nonce += 1
 
 
 def validate_block(self, current_block, previous_block):
@@ -87,6 +95,8 @@ def replace_chain(self, new_chain):
 
 @property
 def last_block(self):
+    if not self.__chain:
+        return []
     return self.__chain[-1]
 
 
@@ -107,5 +117,5 @@ def full_chain(self):
 
 # AGGIUNGI TEST
 
-Blockchain = BlockChain()
-BlockChain.create_genesis()
+blockchain = Blockchain()
+blockchain.create_genesis()

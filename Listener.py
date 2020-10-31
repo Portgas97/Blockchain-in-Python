@@ -5,7 +5,7 @@ from Crypto.PublicKey import RSA
 import User
 import json
 class ThreadListener(Thread):
-
+import BlockChain
     # metodo che rappresenta le attività compiute dal thread
     def run(self):
         # creazione del socket, utilizza IPv4, di tipo UDP
@@ -26,6 +26,19 @@ class ThreadListener(Thread):
 
         while True:
             recv=sock.recv(10240) # non recvfrom per multicasting
+            if recv.decode()=="exists":
+                if not BlockChain.last_block():
+                    sock.sendto("False".encode(), ("224.0.0.0", 2000))
+                if BlockChain.last_block():
+                    sock.sendto("True".encode(), ("224.0.0.0", 2000))
+                break
+
+            if recv.decode()[:6]=="update":
+                tmp = recv.decode().split(" ")
+                last_block=tmp[1]
+                if last_block == BlockChain.last_block().index():
+                    sock.sendto("Already up to date".encode(), ("224.0.0.0", 2000))
+
             message_arrived=recv.split(b'divisore')
             sign=message_arrived[1]
             message=json.loads(message_arrived[0])

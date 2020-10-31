@@ -1,7 +1,7 @@
 import socket
 import User
 from Listener import ThreadListener
-
+from BlockChain import Blockchain
 
 #add_block(["Satoshi sent 1 BTC to Ivan", "Maria sent 5 MTC to Jenny", "Satoshi sent 5 BTC to Hal Finney"])
 #add_block(["Satoshi sent 1 BTC to Ivan", "Maria sent 5 MTC to Jenny", "Satoshi sent 5 BTC to Hal Finney"])
@@ -25,7 +25,13 @@ else:
         print("Wrong operation! I'm exiting with error")
         exit(-1)
 
-User.send_money(private, public)
+#User.send_money(private, public)
+
+if not User.exists_blockchain():
+    Blockchain.create_genesis()
+else:
+    User.update_blockchain()
+
 #c = User.crypt("ciao".encode(), public)
 #print(c)
 #d = User.decrypt(c, private)
