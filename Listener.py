@@ -26,7 +26,7 @@ class ThreadListener(Thread):
         sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
         while True:
-            recv=sock.recv(10240) # non recvfrom per multicasting
+            recv=sock.recv(10240) # infatti non si usa recvfrom per multicasting
             if recv.decode()=="exists":
                 if not local_blockchain.last_block():
                     sock.sendto("False".encode(), ("224.0.0.0", 2000))

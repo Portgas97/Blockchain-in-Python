@@ -12,26 +12,46 @@ from BlockChain import local_blockchain, Blockchain
 listener = ThreadListener()
 listener.start()
 
+print("---------------------------------------------------")
+print("|                                                 |")
+print("| Welcome to DSSCoin, type \'register\' or \'login\': |")
+print("|                                                 |")
+print("---------------------------------------------------")
 
-print("Welcome to DSSCoin, type \'register\' or \'login\':")
 op=input()
 if op == "register":
+    print("Registrazione in corso...")
     public, private = User.register()
 else:
     if op == "login":
         print("Insert your private key:")
         key = input();
+        print("Login in corso...")
         public, private = User.login(key)
     else:
         print("Wrong operation! I'm exiting with error")
         exit(-1)
 
 #User.send_money(private, public)
+# DEBUG
+print("Checking Blockchain: operation started")
 
 if not User.exists_blockchain():
+    print("Creating Genesis Block")
     Blockchain.create_genesis(local_blockchain)
 else:
+    print("Synchronizing Blockchain")
     User.update_blockchain()
+
+# DEBUG
+print("Checking Blockchain: operation terminated")
+# TODO: che operazioni vuole fare l'utente ?
+# Inviare denaro
+# Visualizzare la Blockchain
+# Conoscere la storia delle sue transazioni / wallet, forse questo implica una classe Utente e la gestione con i file
+
+
+
 
 #c = User.crypt("ciao".encode(), public)
 #print(c)
