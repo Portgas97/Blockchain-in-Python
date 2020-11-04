@@ -1,4 +1,5 @@
 import socket
+import struct
 
 import Crypto
 from Crypto.PublicKey import RSA
@@ -10,7 +11,9 @@ from base64 import b64encode, b64decode
 from Transaction import Transaction
 import json
 import BlockChain
+from BlockChain import local_blockchain
 import time
+
 hash = "SHA-256"
 
 
@@ -133,12 +136,21 @@ def verify_transaction(transaction: Transaction):
 def exists_blockchain():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+    # sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+    sock1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+    sock1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock1.bind(('', 2001))
+    mreq = struct.pack("=4sl", socket.inet_aton("224.0.0.0"), socket.INADDR_ANY)
+    sock1.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+
     sock.sendto("exists".encode(), ("224.0.0.0", 2000))
-    sock.settimeout(30)
-    #dimensione del buffer
-    exists=""
+
+    sock1.settimeout(1)
+    # dimensione del buffer
     try:
-        exists=sock.recv(10240)
+        exists = sock1.recv(10240)
+        print("Debug: " + exists.decode())
     except:
         return False
     if exists.decode() == "False":
@@ -146,21 +158,31 @@ def exists_blockchain():
     if exists.decode() == "True":
         return True
 
+
 def update_blockchain():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
-    sock.sendto("update "+BlockChain.last_block().index().encode(), ("224.0.0.0", 2000))
-    sock.settimeout(1)
-    #dimensione del buffer
-    update=sock.recv(10240)
-    if update=="index_error":
+    if not local_blockchain.last_block():
+        sock.sendto("update ".encode() + "empty".encode(), ("224.0.0.0", 2000))
+    else:
+        sock.sendto("update ".encode() + str(BlockChain.local_blockchain.last_block().index).encode(), ("224.0.0.0", 2000))
+    sock1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+    sock1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock1.bind(('', 2001))
+    mreq = struct.pack("=4sl", socket.inet_aton("224.0.0.0"), socket.INADDR_ANY)
+    sock1.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+
+    sock1.settimeout(1)
+    # dimensione del buffer
+    update = sock1.recv(10240)
+    if update == "index_error":
         print("Wrong index")
         return
-    if update=="Already up to date":
+    if update == "Already up to date":
         print(update)
         return
     else:
         update.decode()
-        dict=json.loads(update)
+        dict = json.loads(update)
         for i in dict:
             BlockChain.Blockchain.add_block(i)

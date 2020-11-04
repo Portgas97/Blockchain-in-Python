@@ -12,7 +12,6 @@ class Blockchain:
         #
         self.__current_transactions = []
         self.__chain = []
-        self.create_genesis()
 
     def create_genesis(self):
         genesis_block = Block(0, self.__current_transactions, 0, '00')
@@ -36,7 +35,7 @@ class Blockchain:
     def pending_transactions(self):
         return self.__current_transactions
 
-    def full_chain(self):
+    def get_chain(self):
         return self.__chain
 
 
@@ -66,6 +65,7 @@ class Blockchain:
             return block
 
         return None
+
 
 
     def validate_proof_of_work(self, last_nonce, last_hash, nonce):
@@ -107,8 +107,8 @@ class Blockchain:
     def validate_chain(self, chain_to_validate):
 
             # Validate genesis blocks
-            sha1 = hashlib.sha256("".join(__chain[0].transactions).encode()).hexdigest()
-            sha2 = haslib.sha256("".join(chain_to_validate[0].transactions).encode()).hexdigest()
+            sha1 = hashlib.sha256("".join(self.__chain[0].transactions).encode()).hexdigest()
+            sha2 = hashlib.sha256("".join(chain_to_validate[0].transactions).encode()).hexdigest()
             if sha1 != sha2:
                 return False
 
