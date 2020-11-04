@@ -1,9 +1,9 @@
 import hashlib
 from Block import Block
 from Transaction import Transaction
-
-
+from Crypto.PublicKey import RSA
 # vanno aggiunte le property, corretti gli underscore e scritte le altre funzioni. A cosa serve replace_chain?
+global public
 
 class Blockchain:
     difficulty = 4
@@ -13,8 +13,9 @@ class Blockchain:
         self.__current_transactions = []
         self.__chain = []
 
-    def create_genesis(self):
+    def create_genesis(self, public_key: RSA.RsaKey):
         genesis_block = Block(0, self.__current_transactions, 0, '00')
+        #self.mine(public_key, genesis_block)
         self.__chain.append(genesis_block)
 
     def add_block(self, block):
@@ -49,16 +50,20 @@ class Blockchain:
             return transaction, True
         return None, False
 
-    def mine(self, reward_address):
-        last_block = self.last_block
-        index = last_block.index + 1
-        previous_hash = last_block.hash
+    def mine(self, reward_address:RSA.RsaKey,new_block: Block):
+        last_block = self.last_block()
+        if not last_block:
+            previous_hash="Hash di partenza"
+            index=0
+        else:
+            index = last_block[0].index + 1
+            previous_hash = last_block.hash
 
         # definizione di Mining
-        nonce = self.generate_proof_of_work(last_block)
+        nonce = self.generate_proof_of_work(new_block)
 
         # transaction to reward the miner, no sender
-        self.create_transaction(sender="0", receiver=reward_address, amount=1)
+        self.create_transaction(sender="0", receiver=str(reward_address.n)+"_"+str(reward_address.e), amount=1)
 
         block = Block(index, self.__current_transactions, nonce, previous_hash)
 
@@ -73,16 +78,22 @@ class Blockchain:
         return sha.hexdigest()[:4] == '0' * Blockchain.difficulty
 
     def generate_proof_of_work(self, block):
+        nonce=0
         while True:
-            nonce = 0
             # concatenazione dei parametri su cui calcolare l'hash
-            string_to_hash = "".join(block.transactions) + local_blockchain.last_block(self).block_hash + nonce
+            if not local_blockchain.last_block():
+                string_to_hash = "".join(block.transactions) + "hash di partenza" + str(nonce)
+            else:
+                string_to_hash = "".join(block.transactions) + local_blockchain.last_block().block_hash + nonce
+
             # doppio hash come nel protocollo Bitcoin
             first_hash_256 = hashlib.sha256(string_to_hash.encode()).hexdigest()
             second_hash_256 = hashlib.sha256(first_hash_256.encode()).hexdigest()
             # definizione di Proof of Work
+            print(second_hash_256)
             if second_hash_256[:Blockchain.difficulty] == "0" * Blockchain.difficulty:
-                return second_hash_256, nonce
+                #ho rimosso il return double hash, non dovrebbe essere un problema
+                return nonce
             nonce += 1
 
     def validate_block(self, current_block, previous_block: list):

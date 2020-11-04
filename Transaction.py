@@ -20,7 +20,7 @@ class Transaction:
         Controlla se una transazione è valida, ritorna un booleano
         """
 
-        if self.amount < 0:
+        if int(self.amount) < 0:
             return False
 
         return True
