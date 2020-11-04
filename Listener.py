@@ -6,6 +6,7 @@ from Crypto.PublicKey import RSA
 import User
 import json
 import BlockChain
+import Block
 from BlockChain import local_blockchain
 
 class ThreadListener(Thread):
@@ -44,29 +45,46 @@ class ThreadListener(Thread):
                     tmp = recv.decode().split(" ")
                     last_block=tmp[1]
                     if last_block == "empty":
-                        json_blocks = {}
                         index=BlockChain.local_blockchain.last_block().index
-                        dict = {i: local_blockchain.get_chain()[i] for i in range(0, index+1)}
-                        print("index: " + str(index))
-                        json_blocks=json.dumps(dict)
-                        #for i in range[:index]:
-                        #    new_block = {}
-                        #    new_block[i] = BlockChain.local_blockchain.full_chain()[i]
-                        #    json_blocks = json.dumps(new_block)
-                        print("dict: "+"".join(dict))
-                        sock1.sendto(json_blocks.encode(), ("224.0.0.0", 2001))
+                        packets=[]
+                        for i in range(0,index+1):
+                            new_block=local_blockchain.get_chain()[i]
+                            new_packet={
+                                "index" : new_block.index,
+                                "transactions" : new_block.transactions,
+                                "nonce" : new_block.nonce,
+                                "previous_hash" : new_block.previous_hash,
+                                "timestamp" : new_block.timestamp
+                            }
+                            packets.append(new_packet)
+
+                        dict = {i: packets[i] for i in range(0, index + 1)}
+                        json_packet=json.dumps(dict)
+                        print(json_packet)
+                        sock1.sendto(json_packet.encode(), ("224.0.0.0", 2001))
 
                     elif int(last_block) == BlockChain.local_blockchain.last_block().index:
                         sock1.sendto("Already up to date".encode(), ("224.0.0.0", 2001))
-                    elif int(last_block) < BlockChain.local_blockchain.last_block().index:
-                        #blockchain_to_send=BlockChain.full_chain()[last_block:-1]
-                        json_blocks={}
 
-                        for i in range[last_block:BlockChain.local_blockchain.last_block().index]:
-                            new_block = {}
-                            new_block[i] = BlockChain.local_blockchain.get_chain()[i]
-                            json_blocks = json.dumps(new_block)
-                        sock1.sendto(json_blocks.encode(), ("224.0.0.0", 2001))
+                    elif int(last_block) < BlockChain.local_blockchain.last_block().index:
+                        index = BlockChain.local_blockchain.last_block().index
+                        packets = []
+                        for i in range(int(last_block), index + 1):
+                            new_block = local_blockchain.get_chain()[i]
+                            new_packet = {
+                                "index": new_block.index,
+                                "transactions": new_block.transactions,
+                                "nonce": new_block.nonce,
+                                "previous_hash": new_block.previous_hash,
+                                "timestamp": new_block.timestamp
+                            }
+                            packets.append(new_packet)
+
+                        dict = {i: packets[i] for i in range(int(last_block), index + 1)}
+                        json_packet = json.dumps(dict)
+                        print(json_packet)
+                        sock1.sendto(json_packet.encode(), ("224.0.0.0", 2001))
+
                     elif int(last_block) > BlockChain.local_blockchain.last_block().index:
                         print("Index not valid")
                         sock1.sendto("index_error".encode(), ("224.0.0.0", 2001))
