@@ -18,7 +18,7 @@ class Blockchain:
         self.__chain.append(genesis_block)
 
     def add_block(self, block):
-        if self.validate_block(block, self.last_block):
+        if self.validate_block(block, self.last_block()):
             self.__chain.append(block)
             self.__current_transactions = []
             return True
@@ -40,6 +40,7 @@ class Blockchain:
 
     def get_last_hash(self):
         return self.__chain[-1].block_hash
+
     def create_transaction(self, sender, receiver, amount):
         transaction = Transaction(sender, receiver, amount)
 
@@ -47,7 +48,6 @@ class Blockchain:
             self.__current_transactions.append(transaction)
             return transaction, True
         return None, False
-
 
     def mine(self, reward_address):
         last_block = self.last_block
@@ -67,13 +67,10 @@ class Blockchain:
 
         return None
 
-
-
     def validate_proof_of_work(self, last_nonce, last_hash, nonce):
         # f è per la formattazione
         sha = hashlib.sha256(f'{last_nonce}{last_hash}{nonce}'.encode())
         return sha.hexdigest()[:4] == '0' * Blockchain.difficulty
-
 
     def generate_proof_of_work(self, block):
         while True:
@@ -88,38 +85,38 @@ class Blockchain:
                 return second_hash_256, nonce
             nonce += 1
 
+    def validate_block(self, current_block, previous_block: list):
+        if not previous_block and current_block.index == 0:
+            return True
 
-    def validate_block(self, current_block, previous_block):
-        #if current_block.index != previous_block.index + 1:
-        #    return False
+        elif current_block.index != previous_block.index + 1:
+            return False
 
-        #if current_block.previous_hash != previous_block.block_hash:
-        #    return False
+        if current_block.previous_hash != previous_block.block_hash:
+            return False
 
-        #string_to_hash = "".join(self.transaction) + self.previous_hash
-        #result_hash = hashlib.sha256(string_to_hash.encode()).hexdigest()
-        #if current_block.hash != result_hash:
-        #    return False
+        string_to_hash = "".join(self.transaction) + self.previous_hash
+        result_hash = hashlib.sha256(string_to_hash.encode()).hexdigest()
+        if current_block.hash != result_hash:
+            return False
 
         # da aggiungere if non valido PoW
         return True
 
-
     def validate_chain(self, chain_to_validate):
 
-            # Validate genesis blocks
-            sha1 = hashlib.sha256("".join(self.__chain[0].transactions).encode()).hexdigest()
-            sha2 = hashlib.sha256("".join(chain_to_validate[0].transactions).encode()).hexdigest()
-            if sha1 != sha2:
+        # Validate genesis blocks
+        sha1 = hashlib.sha256("".join(self.__chain[0].transactions).encode()).hexdigest()
+        sha2 = hashlib.sha256("".join(chain_to_validate[0].transactions).encode()).hexdigest()
+        if sha1 != sha2:
+            return False
+
+        # Then we compare each block with its previous one
+        for x in range(1, len(chain_to_validate)):
+            if not self.validate_block(chain_to_validate[x], chain_to_validate[x - 1]):
                 return False
 
-            # Then we compare each block with its previous one
-            for x in range(1, len(chain_to_validate)):
-                if not self.validate_block(chain_to_validate[x], chain_to_validate[x - 1]):
-                    return False
-
-            return True
-
+        return True
 
     def replace_chain(self, new_chain):
 
@@ -135,8 +132,6 @@ class Blockchain:
         new_blocks = new_chain[len(self.__chain):]
         for block in new_blocks:
             self.add_block(block)
-
-
 
 
 # AGGIUNGI TEST

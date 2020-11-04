@@ -33,13 +33,10 @@ class ThreadListener(Thread):
         while True:
             recv=sock.recv(10240) # infatti non si usa recvfrom per multicasting
             if recv.decode()=="exists":
-                print("blockchain:" + "".join(str(local_blockchain.get_chain())))
                 if not local_blockchain.get_chain():
                     sock1.sendto("False".encode(), ("224.0.0.0", 2001))
-                    print("listener:" + "false")
                 if local_blockchain.get_chain():
                     sock1.sendto("True".encode(), ("224.0.0.0", 2001))
-                    print("listener:" + "true")
 
             elif recv.decode()[:6]=="update":
                     tmp = recv.decode().split(" ")
@@ -60,7 +57,6 @@ class ThreadListener(Thread):
 
                         dict = {i: packets[i] for i in range(0, index + 1)}
                         json_packet=json.dumps(dict)
-                        print(json_packet)
                         sock1.sendto(json_packet.encode(), ("224.0.0.0", 2001))
 
                     elif int(last_block) == BlockChain.local_blockchain.last_block().index:
