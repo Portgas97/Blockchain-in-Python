@@ -1,17 +1,16 @@
 import socket
 import struct
-
 import Crypto
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA512, SHA384, SHA256, SHA, MD5
 from Crypto import Random
-from base64 import b64encode, b64decode
 from Transaction import Transaction
 import json
 import BlockChain
 from BlockChain import local_blockchain
+from Block import Block
 import time
 
 hash = "SHA-256"
@@ -150,7 +149,6 @@ def exists_blockchain():
     # dimensione del buffer
     try:
         exists = sock1.recv(10240)
-        print("Debug: " + exists.decode())
     except:
         return False
     if exists.decode() == "False":
@@ -184,5 +182,13 @@ def update_blockchain():
     else:
         update.decode()
         dict = json.loads(update)
+        blocks=[]
         for i in dict:
-            BlockChain.Blockchain.add_block(i)
+            i_dict=dict[i]
+            i_index=i_dict['index']
+            i_transactions=i_dict['transactions']
+            i_nonce=i_dict['nonce']
+            i_previous_hash=i_dict['previous_hash']
+            i_timestamp=i_dict['timestamp']
+            new_block=Block(i_index,i_transactions,i_nonce,i_previous_hash,i_timestamp)
+            local_blockchain.add_block(new_block)

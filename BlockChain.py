@@ -38,7 +38,8 @@ class Blockchain:
     def get_chain(self):
         return self.__chain
 
-
+    def get_last_hash(self):
+        return self.__chain[-1].block_hash
     def create_transaction(self, sender, receiver, amount):
         transaction = Transaction(sender, receiver, amount)
 
@@ -89,16 +90,16 @@ class Blockchain:
 
 
     def validate_block(self, current_block, previous_block):
-        if current_block.index != previous_block.index + 1:
-            return False
+        #if current_block.index != previous_block.index + 1:
+        #    return False
 
-        if current_block.previous_hash != previous_block.block_hash:
-            return False
+        #if current_block.previous_hash != previous_block.block_hash:
+        #    return False
 
-        string_to_hash = "".join(self.transaction) + self.previous_hash
-        result_hash = hashlib.sha256(string_to_hash.encode()).hexdigest()
-        if current_block.hash != result_hash:
-            return False
+        #string_to_hash = "".join(self.transaction) + self.previous_hash
+        #result_hash = hashlib.sha256(string_to_hash.encode()).hexdigest()
+        #if current_block.hash != result_hash:
+        #    return False
 
         # da aggiungere if non valido PoW
         return True

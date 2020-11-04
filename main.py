@@ -53,7 +53,7 @@ print("Checking Blockchain: operation terminated")
 # Visualizzare la Blockchain
 # Conoscere la storia delle sue transazioni / wallet, forse questo implica una classe Utente e la gestione con i file
 
-print(local_blockchain.last_block().timestamp)
+print(local_blockchain.get_last_hash())
 time.sleep(20)
 # c = User.crypt("ciao".encode(), public)
 # print(c)
