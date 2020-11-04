@@ -190,5 +190,14 @@ def update_blockchain():
             i_nonce=i_dict['nonce']
             i_previous_hash=i_dict['previous_hash']
             i_timestamp=i_dict['timestamp']
-            new_block=Block(i_index,i_transactions,i_nonce,i_previous_hash,i_timestamp)
+            transactions=[]
+            for j in i_transactions:
+                tmp=i_transactions[j]
+                tmp_sender=tmp['sender']
+                tmp_amount=tmp['amount']
+                tmp_receiver=tmp['receiver']
+                tmp_timestamp=tmp['timestamp']
+                new_transaction=Transaction(tmp_sender,tmp_amount,tmp_receiver,tmp_timestamp)
+                transactions.append(new_transaction)
+            new_block=Block(i_index,transactions,i_nonce,i_previous_hash,i_timestamp)
             local_blockchain.add_block(new_block)

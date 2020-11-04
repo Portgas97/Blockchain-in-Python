@@ -49,9 +49,20 @@ class ThreadListener(Thread):
                     packets = []
                     for i in range(0, index + 1):
                         new_block = local_blockchain.get_chain()[i]
+                        transactions=new_block.transactions
+                        dict_tra=[]
+                        for j in range (0, len(transactions)):
+                            new_dict = {
+                                "sender": transactions[j].sender,
+                                "amount": transactions[j].amount,
+                                "receiver": transactions[j].receiver,
+                                "timestamp": transactions[j].timestamp,
+                            }
+                            dict_tra.append(new_dict)
+                            dict_transactions = {i: dict_tra[i] for i in range(0, len(transactions))}
                         new_packet = {
                             "index": new_block.index,
-                            "transactions": new_block.transactions,
+                            "transactions": dict_transactions,
                             "nonce": new_block.nonce,
                             "previous_hash": new_block.previous_hash,
                             "timestamp": new_block.timestamp
@@ -59,7 +70,6 @@ class ThreadListener(Thread):
                         packets.append(new_packet)
 
                     dict = {i: packets[i] for i in range(0, index + 1)}
-                    print(packets)
                     json_packet = json.dumps(dict)
                     sock1.sendto(json_packet.encode(), ("224.0.0.0", 2001))
 

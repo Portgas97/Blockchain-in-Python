@@ -7,13 +7,13 @@ class Transaction:
         Crea una nuova transazione.
         Parametri:
         - sender (str) è l'account del mittente
-        - receiver (str) è l'account del destinatario
         - amount (float) è l'ammontare da trasferire
+        - receiver (str) è l'account del destinatario
         """
         self.sender = sender
+        self.amount = amount
         self.receiver = receiver
         self.timestamp = timestamp
-        self.amount = amount
 
     def validate(self):
         """
