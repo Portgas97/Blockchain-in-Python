@@ -11,15 +11,18 @@ import json
 import BlockChain
 from BlockChain import local_blockchain
 from Block import Block
+import hashlib
 import time
 
 hash = "SHA-256"
-
+public_key=0
 
 def newkeys(keysize):
+    global public_key
     random_generator = Crypto.Random.get_random_bytes
     key = RSA.generate(keysize, random_generator)
     private, public = key, key.publickey()
+    public_key=public
     return public, private
 
 
@@ -119,7 +122,7 @@ def send_money(private_key: Crypto.PublicKey.RSA.RsaKey, sender):
         "timestamp": new_transaction.timestamp
     }
     message_to_send = json.dumps(packet)
-    sign_of_transaction = sign(packet.__str__().encode(), private_key, "SHA256")
+    sign_of_transaction = sign(hashlib.sha256(packet.__str__().encode()).hexdigest().encode(), private_key, "SHA256")
     print("messaggio user")
     print(sign_of_transaction)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -170,7 +173,7 @@ def update_blockchain():
     mreq = struct.pack("=4sl", socket.inet_aton("224.0.0.0"), socket.INADDR_ANY)
     sock1.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
-    sock1.settimeout(1)
+    sock1.settimeout(10)
     # dimensione del buffer
     update = sock1.recv(10240)
     if update == "index_error":
