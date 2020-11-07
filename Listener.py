@@ -120,14 +120,15 @@ class ThreadListener(Thread):
                 message_receiver_n = message["receiver_n"]
                 message_reveicer_e = message["receiver_e"]
                 message_timestamp=message["timestamp"]
-                sender_key = RSA.construct([message_receiver_n, message_reveicer_e])
-                is_valid = User.verify(hashlib.sha256(message.__str__().encode()).hexdigest().encode(), sign, sender_key)
+                sender_key = RSA.construct([message_sender_n, message_sender_e])
+                is_valid = User.verify(message.__str__().encode(), sign, sender_key)
                 print("messaggio listener")
                 print(sign)
                 print("Transiction is valid:" + str(is_valid))
                 number_of_transactions=number_of_transactions+1
                 local_blockchain.create_transaction(str(message_sender_n)+"_"+str(message_sender_e),message_amount, str(message_receiver_n)+"_"+str(message_reveicer_e),message_timestamp)
                 if number_of_transactions==2:
+                    number_of_transactions=0
                     local_blockchain.mine(User.public_key,local_blockchain.pending_transactions())
 
     # TODO Mining
