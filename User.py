@@ -145,6 +145,7 @@ def exists_blockchain():
 
     sock.sendto("exists".encode(), ("224.0.0.0", 2000))
 
+    # dopo 1 secondo se nessuno risponde ritorno False
     sock1.settimeout(1)
     # dimensione del buffer
     try:
