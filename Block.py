@@ -11,5 +11,7 @@ class Block:
         string_to_hash = ""#.join(transactions) + previous_hash
         for i in transactions:
             string_to_hash+=str(i.sender)+str(i.amount)+str(i.receiver)
-        string_to_hash+=previous_hash
+        string_to_hash+=str(previous_hash)
+        string_to_hash+=str(nonce)
+        string_to_hash+=str(timestamp)
         self.block_hash = hashlib.sha256(string_to_hash.encode()).hexdigest()

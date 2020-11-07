@@ -26,6 +26,7 @@ op = input()
 if op == "register":
     print("Registrazione in corso...")
     public, private = User.register()
+    time.sleep(2)
 else:
     if op == "login":
         print("Insert your private key:")
@@ -49,7 +50,7 @@ listener = ThreadListener()
 listener.start()
 print("Checking Blockchain: operation terminated")
 
-# DEBUG - each process prints the hash of the last block (in this case, the genesys block)
+# DEBUG - each process prints the hash of the last block (in this case, the genesis block)
 print("Hash del blocco genesi corrente")
 print(local_blockchain.get_last_hash())
 ##################################
@@ -74,6 +75,10 @@ op = int(input())
 if op > 3 or op < 1:
     print("I'm exiting")
     os.kill(os.getpid(), signal.SIGTERM)
+
+elif op == 1:
+    User.send_money(private, public)
+
 # c = User.crypt("ciao".encode(), public)
 # print(c)
 # d = User.decrypt(c, private)

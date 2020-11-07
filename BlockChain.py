@@ -1,4 +1,6 @@
 import hashlib
+from time import time
+
 from Block import Block
 from Transaction import Transaction
 from Crypto.PublicKey import RSA
@@ -8,7 +10,7 @@ from Crypto.PublicKey import RSA
 
 
 class Blockchain:
-    difficulty = 5
+    difficulty = 3
     initial_hash = "Once upon a time"
 
     def __init__(self):
@@ -17,8 +19,8 @@ class Blockchain:
         self.__chain = []
 
     def create_genesis(self, public_key: RSA.RsaKey):
-        genesis_block = Block(0, self.__current_transactions, self.initial_hash, '00')
-        self.mine(public_key, genesis_block)
+        genesis_block_transactions = self.__current_transactions
+        self.mine(public_key, genesis_block_transactions)
         # self.__chain.append(genesis_block)
 
     def add_block(self, block):
@@ -27,6 +29,7 @@ class Blockchain:
             self.__current_transactions = []
             return True
         return False
+
 
     def last_block(self):
         if not self.__chain:
@@ -45,28 +48,29 @@ class Blockchain:
     def get_last_hash(self):
         return self.__chain[-1].block_hash
 
-    def create_transaction(self, sender, amount, receiver):
-        transaction = Transaction(sender, amount, receiver)
+    def create_transaction(self, sender, amount, receiver, timestamp=time()):
+        transaction = Transaction(sender, amount, receiver,timestamp)
 
         if transaction.validate():  # todo aggiungere controllo soldi disponibili a validate()
             self.__current_transactions.append(transaction)
             return transaction, True
         return None, False
 
-    def mine(self, reward_address: RSA.RsaKey, new_block: Block):
+    def mine(self, reward_address: RSA.RsaKey, new_block_transactions):
         last_block = self.last_block()
         if not last_block:
             previous_hash = self.initial_hash
             index = 0
         else:
-            index = last_block[0].index + 1
-            previous_hash = last_block.hash
+            index = last_block.index + 1
+            previous_hash = last_block.block_hash
+
+        self.create_transaction(sender="0", amount=1, receiver=str(reward_address.n) + "_" + str(reward_address.e))
 
         # definizione di Mining
-        nonce = self.generate_proof_of_work(new_block)
+        nonce = self.generate_proof_of_work(new_block_transactions)
 
         # transaction to reward the miner, no sender
-        self.create_transaction(sender="0", amount=1, receiver=str(reward_address.n) + "_" + str(reward_address.e))
 
         block = Block(index, self.__current_transactions, nonce, previous_hash)
 
@@ -80,14 +84,21 @@ class Blockchain:
         sha = hashlib.sha256(f'{last_nonce}{last_hash}{nonce}'.encode())
         return sha.hexdigest()[:4] == '0' * Blockchain.difficulty
 
-    def generate_proof_of_work(self, block):
+    def generate_proof_of_work(self, block_transactions):
         nonce = 0
         while True:
             # concatenazione dei parametri su cui calcolare l'hash
             if not local_blockchain.last_block():
-                string_to_hash = "".join(block.transactions) + self.initial_hash + str(nonce)
+                string_to_hash=""
+                for i in range(0, len(self.__current_transactions)):
+                    string_to_hash += block_transactions[i].sender+str(block_transactions[i].amount)+ block_transactions[i].receiver +str(block_transactions[i].timestamp)
+                string_to_hash += self.initial_hash + str(nonce)
             else:
-                string_to_hash = "".join(block.transactions) + local_blockchain.last_block().block_hash + nonce
+                string_to_hash=""
+                for i in range(0, len(self.__current_transactions)):
+                    string_to_hash += block_transactions[i].sender + str(block_transactions[i].amount) + \
+                                      block_transactions[i].receiver + str(block_transactions[i].timestamp)
+                string_to_hash += local_blockchain.last_block().block_hash + str(nonce)
 
             # doppio hash come nel protocollo Bitcoin
             first_hash_256 = hashlib.sha256(string_to_hash.encode()).hexdigest()
@@ -109,9 +120,14 @@ class Blockchain:
         if current_block.previous_hash != previous_block.block_hash:
             return False
 
-        string_to_hash = "".join(self.transaction) + self.previous_hash
+        string_to_hash=""
+        for i in self.__current_transactions:
+            string_to_hash += str(i.sender) + str(i.amount) + str(i.receiver)
+        string_to_hash += str(self.last_block().block_hash)
+        string_to_hash += str(current_block.nonce)
+        string_to_hash += str(current_block.timestamp)
         result_hash = hashlib.sha256(string_to_hash.encode()).hexdigest()
-        if current_block.hash != result_hash:
+        if current_block.block_hash != result_hash:
             return False
 
         # da aggiungere if non valido PoW

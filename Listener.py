@@ -9,7 +9,7 @@ import json
 import BlockChain
 import Block
 from BlockChain import local_blockchain
-
+import hashlib
 
 class ThreadListener(Thread):
 
@@ -33,15 +33,25 @@ class ThreadListener(Thread):
         mreq = struct.pack("=4sl", socket.inet_aton("224.0.0.0"), socket.INADDR_ANY)
         # aggiungiamo al multicast group
         sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+
+        #count transactions
+        number_of_transactions=0
         while True:
+
             recv = sock.recv(10240)  # infatti non si usa recvfrom per multicasting
-            if recv.decode() == "exists":
+            msg=""
+            try:
+                msg=recv.decode()
+            except:
+                print(msg)
+
+            if msg == "exists":
                 if not local_blockchain.get_chain():
                     sock1.sendto("False".encode(), ("224.0.0.0", 2001))
                 if local_blockchain.get_chain():
                     sock1.sendto("True".encode(), ("224.0.0.0", 2001))
 
-            elif recv.decode()[:6] == "update":
+            elif msg[:6] == "update":
                 tmp = recv.decode().split(" ")
                 last_block = tmp[1]
                 if last_block == "empty":
@@ -99,16 +109,25 @@ class ThreadListener(Thread):
                     print("Index not valid")
                     sock1.sendto("index_error".encode(), ("224.0.0.0", 2001))
             else:
+
                 message_arrived = recv.split(b'divisore')
                 sign = message_arrived[1]
                 message = json.loads(message_arrived[0])
                 print(message)
                 message_sender_n = message["sender_n"]
                 message_sender_e = message["sender_e"]
-                sender_key = RSA.construct([message_sender_n, message_sender_e])
-                is_valid = User.verify(message.__str__().encode(), sign, sender_key)
+                message_amount=message["amount"]
+                message_receiver_n = message["receiver_n"]
+                message_reveicer_e = message["receiver_e"]
+                message_timestamp=message["timestamp"]
+                sender_key = RSA.construct([message_receiver_n, message_reveicer_e])
+                is_valid = User.verify(hashlib.sha256(message.__str__().encode()).hexdigest().encode(), sign, sender_key)
                 print("messaggio listener")
                 print(sign)
                 print("Transiction is valid:" + str(is_valid))
+                number_of_transactions=number_of_transactions+1
+                local_blockchain.create_transaction(str(message_sender_n)+"_"+str(message_sender_e),message_amount, str(message_receiver_n)+"_"+str(message_reveicer_e),message_timestamp)
+                if number_of_transactions==2:
+                    local_blockchain.mine(User.public_key,local_blockchain.pending_transactions())
 
     # TODO Mining
