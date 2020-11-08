@@ -10,7 +10,7 @@ from Crypto.PublicKey import RSA
 
 
 class Blockchain:
-    difficulty = 3
+    difficulty = 0
     initial_hash = "Once upon a time"
 
     def __init__(self):

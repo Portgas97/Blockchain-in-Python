@@ -64,7 +64,7 @@ def sign(message, priv_key, hashAlg="SHA-256"):
 
 
 # verifica la validità della firma
-def verify(message, signature, pub_key):
+def verify(message, signature, pub_key,hash="SHA-256"):
     signer = PKCS1_v1_5.new(pub_key)
     if (hash == "SHA-512"):
         digest = SHA512.new()
@@ -122,7 +122,7 @@ def send_money(private_key: Crypto.PublicKey.RSA.RsaKey, sender):
         "timestamp": new_transaction.timestamp
     }
     message_to_send = json.dumps(packet)
-    sign_of_transaction = sign(hashlib.sha256(packet.__str__().encode()).hexdigest().encode(), private_key, "SHA256")
+    sign_of_transaction = sign(packet.__str__().encode(), private_key, "SHA-256")
     print("messaggio user")
     print(sign_of_transaction)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
