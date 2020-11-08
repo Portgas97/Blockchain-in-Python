@@ -10,7 +10,7 @@ from Crypto.PublicKey import RSA
 
 
 class Blockchain:
-    difficulty = 0
+    difficulty = 2
     initial_hash = "Once upon a time"
 
     def __init__(self):
@@ -20,7 +20,9 @@ class Blockchain:
 
     def create_genesis(self, public_key: RSA.RsaKey):
         genesis_block_transactions = self.__current_transactions
+        print("DEBUG_LOG: chiamata a mine() dentro a create_genesis()")
         self.mine(public_key, genesis_block_transactions)
+        print("DEBUG_LOG: mine() dentro a create_genesis() terminata")
         # self.__chain.append(genesis_block)
 
     def add_block(self, block):
@@ -68,7 +70,9 @@ class Blockchain:
         self.create_transaction(sender="0", amount=1, receiver=str(reward_address.n) + "_" + str(reward_address.e))
 
         # definizione di Mining
+        print("DEBUG_LOG: chiamata a generate_proof_of_work() dentro a mine()")
         nonce = self.generate_proof_of_work(new_block_transactions)
+        print("DEBUG_LOG: generate_proof_of_work() dentro a mine() terminata")
 
         # transaction to reward the miner, no sender
 
@@ -86,6 +90,8 @@ class Blockchain:
 
     def generate_proof_of_work(self, block_transactions):
         nonce = 0
+        # variabile per lo stile dell'output
+        number = 0
         while True:
             # concatenazione dei parametri su cui calcolare l'hash
             if not local_blockchain.last_block():
@@ -103,12 +109,16 @@ class Blockchain:
             # doppio hash come nel protocollo Bitcoin
             first_hash_256 = hashlib.sha256(string_to_hash.encode()).hexdigest()
             second_hash_256 = hashlib.sha256(first_hash_256.encode()).hexdigest()
+
+            print(str(number) + ": " + second_hash_256)
+
             # definizione di Proof of Work
-            print(second_hash_256)
             if second_hash_256[:Blockchain.difficulty] == "0" * Blockchain.difficulty:
                 # ho rimosso il return double hash, non dovrebbe essere un problema
                 return nonce
             nonce += 1
+            number += 1
+
 
     def validate_block(self, current_block, previous_block: list):
         if not previous_block and current_block.index == 0:
@@ -129,7 +139,6 @@ class Blockchain:
         result_hash = hashlib.sha256(string_to_hash.encode()).hexdigest()
         if current_block.block_hash != result_hash:
             return False
-
         # da aggiungere if non valido PoW
         return True
 

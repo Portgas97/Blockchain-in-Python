@@ -23,8 +23,10 @@ print("|                                                 |")
 print("---------------------------------------------------")
 
 op = input()
+
 if op == "register":
     print("Registrazione in corso...")
+    print("DEBUG_LOG: chiamata a User.register()")
     public, private = User.register()
     time.sleep(2)
 else:
@@ -32,34 +34,38 @@ else:
         print("Insert your private key:")
         key = input()
         print("Login in corso...")
+        print("DEBUG_LOG: chiamata a User.login()")
         public, private = User.login(key)
     else:
         print("Wrong operation! I'm exiting with error")
         os.kill(os.getpid(), signal.SIGTERM)
+
 # User.send_money(private, public)
 print("Checking Blockchain: operation started")
 
 if not User.exists_blockchain():
-    print("Creating Genesis Block")
+    print("Creating Genesis Block\n")
+    print("DEBUG_LOG: chiamata a create_genesis()")
     Blockchain.create_genesis(local_blockchain, public)
+    print("DEBUG_LOG: create_genesis() terminata")
 else:
     print("Synchronizing Blockchain")
+    print("DEBUG_LOG: chiamata a update_blockchain()")
     User.update_blockchain()
+    print("DEBUG_LOG: update_blockchain() terminata")
 
+print("Checking Blockchain: operation terminated\n")
+print("DEBUG_LOG: avvio del thread listener")
 listener = ThreadListener()
 listener.start()
-print("Checking Blockchain: operation terminated")
+
 
 # DEBUG - each process prints the hash of the last block (in this case, the genesis block)
 print("Hash del blocco genesi corrente")
 print(local_blockchain.get_last_hash())
-##################################
 
 
-# TODO: che operazioni vuole fare l'utente ?
-# Inviare denaro
-# Visualizzare la Blockchain
-# Conoscere la storia delle sue transazioni / wallet, forse questo implica una classe Utente e la gestione con i file
+# Queste operazioni vanno all'interno di un ciclo infinito in modo da poter rieseguire
 
 print("---------------------------------------------------")
 print("|                                                 |")
@@ -77,7 +83,20 @@ if op > 3 or op < 1:
     os.kill(os.getpid(), signal.SIGTERM)
 
 elif op == 1:
+    print("DEBUG_LOG: chiamata a send_money()")
     User.send_money(private, public)
+    print("DEBUG_LOG: send_money() terminata")
+
+elif op == 2:
+    print("Actual Blockchain:")
+
+elif op == 3:
+    print("Transaction History:")
+
+
+time.sleep(10)
+print("sleep in User.py terminata")
+print("####### FINE DEMO #######")
 
 # c = User.crypt("ciao".encode(), public)
 # print(c)

@@ -15,14 +15,21 @@ import hashlib
 import time
 
 hash = "SHA-256"
-public_key=0
+public_key = 0
+private_key = 0
+
+###############################################################################
+#                    FUNZIONI CRITTOGRAFICHE DI UTILITÀ
+##############################################################################
 
 def newkeys(keysize):
     global public_key
+    global private_key
     random_generator = Crypto.Random.get_random_bytes
     key = RSA.generate(keysize, random_generator)
     private, public = key, key.publickey()
-    public_key=public
+    public_key = public
+    private_key = private
     return public, private
 
 
@@ -79,16 +86,19 @@ def verify(message, signature, pub_key,hash="SHA-256"):
     digest.update(message)
     return signer.verify(digest, signature)
 
+###############################################################################
+#                          FUNZIONI PER L'UTENTE
+##############################################################################
 
 def register():
-    print("The registration is completed!")
+    print("The registration is completed!\n")
     public, private = newkeys(2048)
-    print("Your public key is:")
-    print(str(public.n) + "_" + str(public.e))
-    print("Your private key is:")
+    print("Your public key is:\n")
+    print(str(public.n) + "_" + str(public.e) + "\n")
+    print("Your private key is:\n")
     key = [str(private.n), str(private.e), str(private.d)]
-    print(str(private.n) + " " + str(private.e) + " " + str(private.d))
-    print("Save your private key or you will not be able to access your wallet again!")
+    print(str(private.n) + " " + str(private.e) + " " + str(private.d) + "\n")
+    print("Save your private key or you will not be able to access your wallet again!\n")
     return public, private
 
 
@@ -102,17 +112,23 @@ def login(key):
 
 
 def send_money(private_key: Crypto.PublicKey.RSA.RsaKey, sender):
+
     print("Insert the public key or the receiver:")
     receiver = input()
+
     print("Insert the amount of money you want to send:")
     amount = input()
+
     # TODO check input data
-    # chiave pubblica del destinatario
+    print("Transazione di: " + amount + " DSSCoin verso: " + receiver + "\n")
+
     tmp = receiver.split("_")
     n = int(tmp[0])
     e = int(tmp[1])
     receiver_public_key = RSA.construct([n, e])
+
     new_transaction = Transaction(sender, amount, receiver_public_key)
+
     packet = {
         "sender_n": new_transaction.sender.n,
         "sender_e": new_transaction.sender.e,
@@ -122,20 +138,23 @@ def send_money(private_key: Crypto.PublicKey.RSA.RsaKey, sender):
         "timestamp": new_transaction.timestamp
     }
     message_to_send = json.dumps(packet)
+
     sign_of_transaction = sign(packet.__str__().encode(), private_key, "SHA-256")
-    print("messaggio user")
+
+    print("Messaggio user (sign_of_transaction):")
     print(sign_of_transaction)
+
+    # creazione del socket per trasmettere, invio della transazione in formato JSON, firma appesa in seguito
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+    # divisore per fare la split lato ricevente
+    print("DEBUG_LOG: chiamata a send_to() dentro a send_money()")
     sock.sendto((message_to_send + "divisore").encode() + sign_of_transaction, ("224.0.0.0", 2000))
 
 
-def verify_transaction(transaction: Transaction):
-    public = transaction[0].sender
-    return verify(transaction[0], transaction[1], public)
-
 
 def exists_blockchain():
+    print("DEBUG_LOG: chiamata a exists_blockchain()")
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
     # sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -154,20 +173,28 @@ def exists_blockchain():
     try:
         exists = sock1.recv(10240)
     except:
+        print("DEBUG_LOG: terminazione exists_blockchain, valore di ritorno: False, causa: recv scaduta\n")
         return False
     if exists.decode() == "False":
+        print("DEBUG_LOG: terminazione exists_blockchain, valore di ritorno: False, causa: valore di ritorno == False\n")
         return False
     if exists.decode() == "True":
+        print("DEBUG_LOG: terminazione exists_blockchain, valore di ritorno: True, causa: valore di ritorno == True\n")
         return True
+
 
 
 def update_blockchain():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+
     if not local_blockchain.last_block():
+        # lo spazio dopo update serve come divisore in Listener.py
         sock.sendto("update ".encode() + "empty".encode(), ("224.0.0.0", 2000))
     else:
+        # lo spazio dopo update serve come divisore in Listener.py
         sock.sendto("update ".encode() + str(BlockChain.local_blockchain.last_block().index).encode(), ("224.0.0.0", 2000))
+
     sock1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock1.bind(('', 2001))
@@ -177,6 +204,7 @@ def update_blockchain():
     sock1.settimeout(10)
     # dimensione del buffer
     update = sock1.recv(10240)
+
     if update == "index_error":
         print("Wrong index")
         return
@@ -205,3 +233,8 @@ def update_blockchain():
                 transactions.append(new_transaction)
             new_block=Block(i_index,transactions,i_nonce,i_previous_hash,i_timestamp)
             local_blockchain.add_block(new_block)
+
+
+def verify_transaction(transaction: Transaction):
+    public = transaction[0].sender
+    return verify(transaction[0], transaction[1], public)
