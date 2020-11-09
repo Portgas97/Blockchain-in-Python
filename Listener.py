@@ -69,7 +69,9 @@ class ThreadListener(Thread):
                     # TO CHECK: a me dà un errore di index su i dopo un po' di transazioni
                     for i in range(0, index + 1):
                         new_block = local_blockchain.get_chain()[i]
+                        print("DEGUG_LOG"+ str(new_block.index))
                         transactions = new_block.transactions
+                        print(transactions)
                         dict_tra = []
                         # TO CHECK: non ci vuole len + 1 ?
                         for j in range (0, len(transactions)):
@@ -81,7 +83,9 @@ class ThreadListener(Thread):
                             }
 
                             dict_tra.append(new_dict)
-                            dict_transactions = {i: dict_tra[i] for i in range(0, len(transactions))}
+
+                        print(dict_tra)
+                        dict_transactions = {k: dict_tra[k] for k in range(0, len(transactions))}
 
                         new_packet = {
                             "index": new_block.index,
@@ -167,7 +171,7 @@ class ThreadListener(Thread):
                 ##### PUNTO 3 #####
                 key_received = str(message_sender_n) + "_" + str(message_sender_e)
                 print("LOG_DEBUG: key_received: " + key_received + "\n")
-                local_private_key = str(User.private_key.n) + "_" + str(User.private_key.e)
+                local_private_key = str(User.public_key.n) + "_" + str(User.public_key.e)
                 print("LOG_DEBUG: local_private_key: " + local_private_key + "\n")
 
                 if key_received == local_private_key:

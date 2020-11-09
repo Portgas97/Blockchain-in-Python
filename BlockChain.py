@@ -131,7 +131,7 @@ class Blockchain:
             return False
 
         string_to_hash=""
-        for i in self.__current_transactions:
+        for i in current_block.transactions:
             string_to_hash += str(i.sender) + str(i.amount) + str(i.receiver)
         string_to_hash += str(self.last_block().block_hash)
         string_to_hash += str(current_block.nonce)

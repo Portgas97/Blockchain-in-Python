@@ -215,6 +215,7 @@ def update_blockchain():
         update.decode()
         dict = json.loads(update)
         blocks=[]
+        print("DEBUG_UPDATE"+"".join(dict))
         for i in dict:
             i_dict=dict[i]
             i_index=i_dict['index']
