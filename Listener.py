@@ -1,4 +1,4 @@
-
+import time
 from threading import Thread
 
 import socket
@@ -108,6 +108,7 @@ class ThreadListener(Thread):
                 elif int(last_block) == BlockChain.local_blockchain.last_block().index:
                     print("DEBUG last block:" + last_block)
                     print("DEBUG localblockchain.lastblock"+str(BlockChain.local_blockchain.last_block().index))
+                    time.sleep(1/10)
                     sock1.sendto("Already up to date".encode(), ("224.0.0.0", 2001))
 
                 # CASO IN CUI C'È UN AGGIORNAMENTO PARZIALE
@@ -200,6 +201,7 @@ class ThreadListener(Thread):
 
                 if key_received == local_private_key:
                     # torno in ascolto
+                    local_blockchain.create_transaction(key_received,message_amount,str(message_receiver_n)+"_"+str(message_reveicer_e),message_timestamp)
                     print("DEBUG_LOG: il thread listener ha ricevuto una transazione creata in locale")
                     continue
                 ## FINE PUNTO 3 ##

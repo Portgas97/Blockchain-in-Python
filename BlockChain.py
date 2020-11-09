@@ -69,7 +69,7 @@ class Blockchain:
             previous_hash = last_block.block_hash
             print("ramo else"+str(index))
 
-        self.create_transaction(sender="0", amount=1, receiver=str(reward_address.n) + "_" + str(reward_address.e))
+        self.create_transaction(sender="0", amount=50, receiver=str(reward_address.n) + "_" + str(reward_address.e))
 
         # definizione di Mining
         print("DEBUG_LOG: chiamata a generate_proof_of_work() dentro a mine()")
@@ -173,6 +173,23 @@ class Blockchain:
         new_blocks = new_chain[len(self.__chain):]
         for block in new_blocks:
             self.add_block(block)
+
+    def count_money(self, public_key : RSA.RsaKey):
+        amount=0
+        for i in self.__chain:
+            for j in i.transactions:
+                if j.receiver == str(public_key.n)+"_"+str(public_key.e):
+                    amount += int(j.amount)
+                if j.sender == str(public_key.n)+"_"+str(public_key.e):
+                    amount -= int(j.amount)
+        print("DEBUG_COUNT MONEY"+str(amount))
+        for i in self.__current_transactions:
+            if i.receiver == str(public_key.n) + "_" + str(public_key.e):
+                amount += int(i.amount)
+            if i.sender == str(public_key.n) + "_" + str(public_key.e):
+                amount -= int(i.amount)
+        print("DEBUG_COUNT MONEY"+str(amount))
+        return amount
 
 
 # AGGIUNGI TEST

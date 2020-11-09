@@ -14,6 +14,8 @@ from Block import Block
 import hashlib
 import time
 
+from ServerListener import update2
+
 hash = "SHA-256"
 public_key = 0
 private_key = 0
@@ -125,6 +127,19 @@ def send_money(private_key: Crypto.PublicKey.RSA.RsaKey, sender):
     tmp = receiver.split("_")
     n = int(tmp[0])
     e = int(tmp[1])
+
+    #check sender != receiver
+
+    if sender.n == n and sender.e == e:
+        print("Sender is uqual to Receiver")
+        return
+
+    #check amount of money
+
+    if local_blockchain.count_money(sender)<int(amount):
+        print("Not enough money")
+        return
+
     receiver_public_key = RSA.construct([n, e])
 
     new_transaction = Transaction(sender, amount, receiver_public_key)
@@ -196,15 +211,16 @@ def update_blockchain():
         # lo spazio dopo update serve come divisore in Listener.py
         sock.sendto("update ".encode() + str(BlockChain.local_blockchain.last_block().index).encode()+ " ".encode() + str(public_key.n).encode() + "_".encode() + str(public_key.e).encode(), ("224.0.0.0", 2000))
 
-    sock1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-    sock1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock1.bind(('', 2001))
-    mreq = struct.pack("=4sl", socket.inet_aton("224.0.0.0"), socket.INADDR_ANY)
-    sock1.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+    #sock1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+    #sock1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    #sock1.bind(('', 2001))
+    #mreq = struct.pack("=4sl", socket.inet_aton("224.0.0.0"), socket.INADDR_ANY)
+    #sock1.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
-    sock1.settimeout(10)
+    #sock1.settimeout(10)
     # dimensione del buffer
-    update = sock1.recv(10240).decode()
+    #update = sock1.recv(10240).decode()
+    update=update2
 
     if update == "index_error":
         print("Wrong index")
