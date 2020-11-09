@@ -185,15 +185,16 @@ def exists_blockchain():
 
 
 def update_blockchain():
+    global public_key
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
 
     if not local_blockchain.last_block():
         # lo spazio dopo update serve come divisore in Listener.py
-        sock.sendto("update ".encode() + "empty".encode(), ("224.0.0.0", 2000))
+        sock.sendto("update ".encode() + "empty ".encode()+ str(public_key.n).encode() + "_".encode() + str(public_key.e).encode(), ("224.0.0.0", 2000))
     else:
         # lo spazio dopo update serve come divisore in Listener.py
-        sock.sendto("update ".encode() + str(BlockChain.local_blockchain.last_block().index).encode(), ("224.0.0.0", 2000))
+        sock.sendto("update ".encode() + str(BlockChain.local_blockchain.last_block().index).encode()+ " ".encode() + str(public_key.n).encode() + "_".encode() + str(public_key.e).encode(), ("224.0.0.0", 2000))
 
     sock1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -203,7 +204,7 @@ def update_blockchain():
 
     sock1.settimeout(10)
     # dimensione del buffer
-    update = sock1.recv(10240)
+    update = sock1.recv(10240).decode()
 
     if update == "index_error":
         print("Wrong index")
@@ -212,9 +213,8 @@ def update_blockchain():
         print(update)
         return
     else:
-        tmp=update.decode()
-        print("DEBUG_JSON_ARRIVED "+tmp)
-        dict = json.loads(tmp)
+        print("DEBUG_JSON_ARRIVED "+update)
+        dict = json.loads(update)
         blocks=[]
         print("DEBUG_UPDATE"+"".join(dict))
         for i in dict:

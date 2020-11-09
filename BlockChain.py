@@ -63,9 +63,11 @@ class Blockchain:
         if not last_block:
             previous_hash = self.initial_hash
             index = 0
+            print("ramo if")
         else:
             index = last_block.index + 1
             previous_hash = last_block.block_hash
+            print("ramo else"+str(index))
 
         self.create_transaction(sender="0", amount=1, receiver=str(reward_address.n) + "_" + str(reward_address.e))
 

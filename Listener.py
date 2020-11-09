@@ -61,7 +61,10 @@ class ThreadListener(Thread):
             elif msg[:6] == "update":
                 tmp = recv.decode().split(" ")
                 last_block = tmp[1]
-
+                received_public_key=tmp[2]
+                if received_public_key == str(User.public_key.n)+"_"+str(User.public_key.e):
+                    print("non rispondo a me stesso")
+                    continue
                 # CASO IN CUI IL MITTENTE NON HA NIENTE
                 if last_block == "empty":
                     index = BlockChain.local_blockchain.last_block().index
@@ -103,11 +106,15 @@ class ThreadListener(Thread):
 
                 # CASO IN CUI NON C'È BISOGNO DI AGGIORNARE
                 elif int(last_block) == BlockChain.local_blockchain.last_block().index:
+                    print("DEBUG last block:" + last_block)
+                    print("DEBUG localblockchain.lastblock"+str(BlockChain.local_blockchain.last_block().index))
                     sock1.sendto("Already up to date".encode(), ("224.0.0.0", 2001))
 
                 # CASO IN CUI C'È UN AGGIORNAMENTO PARZIALE
                 elif int(last_block) < BlockChain.local_blockchain.last_block().index:
-                    for i in range(int(last_block)+1, index + 2):
+                    index = BlockChain.local_blockchain.last_block().index
+                    packets=[]
+                    for i in range(0, index + 1):
                         new_block = local_blockchain.get_chain()[i]
                         print("DEGUG_LOG" + str(new_block.index))
                         transactions = new_block.transactions
@@ -135,8 +142,9 @@ class ThreadListener(Thread):
                         }
 
                         packets.append(new_packet)
-
-                    dict = {i: packets[i] for i in range(int(last_block)+1, index + 2)}
+                    print("DEBUG PACCKETS")
+                    print(packets)
+                    dict = {i: packets[i] for i in range(int(last_block)+1, index + 1)}
                     json_packet = json.dumps(dict)
                     print("\n")
                     print("DEBUG_SEMI_UPDATE")
