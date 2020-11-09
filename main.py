@@ -81,7 +81,7 @@ while True:
     print("|                                                 |")
     print("---------------------------------------------------")
     op = int(input())
-    if op > 3 or op < 1:
+    if op > 4 or op < 1:
         print("I'm exiting")
         os.kill(os.getpid(), signal.SIGTERM)
 
@@ -95,6 +95,9 @@ while True:
 
     elif op == 3:
         print("Transaction History:")
+    elif op == 4:
+        User.update_blockchain()
+
 
 
 time.sleep(10)

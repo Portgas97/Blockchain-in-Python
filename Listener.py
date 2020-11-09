@@ -66,7 +66,6 @@ class ThreadListener(Thread):
                 if last_block == "empty":
                     index = BlockChain.local_blockchain.last_block().index
                     packets = []
-                    # TO CHECK: a me dà un errore di index su i dopo un po' di transazioni
                     for i in range(0, index + 1):
                         new_block = local_blockchain.get_chain()[i]
                         print("DEGUG_LOG"+ str(new_block.index))
@@ -108,22 +107,39 @@ class ThreadListener(Thread):
 
                 # CASO IN CUI C'È UN AGGIORNAMENTO PARZIALE
                 elif int(last_block) < BlockChain.local_blockchain.last_block().index:
-                    index = BlockChain.local_blockchain.last_block().index
-                    packets = []
-
-                    for i in range(int(last_block), index + 1):
+                    for i in range(int(last_block)+1, index + 2):
                         new_block = local_blockchain.get_chain()[i]
+                        print("DEGUG_LOG" + str(new_block.index))
+                        transactions = new_block.transactions
+                        print(transactions)
+                        dict_tra = []
+                        for j in range(0, len(transactions)):
+                            new_dict = {
+                                "sender": transactions[j].sender,
+                                "amount": transactions[j].amount,
+                                "receiver": transactions[j].receiver,
+                                "timestamp": transactions[j].timestamp,
+                            }
+
+                            dict_tra.append(new_dict)
+
+                        print(dict_tra)
+                        dict_transactions = {k: dict_tra[k] for k in range(0, len(transactions))}
+
                         new_packet = {
                             "index": new_block.index,
-                            "transactions": new_block.transactions,
+                            "transactions": dict_transactions,
                             "nonce": new_block.nonce,
                             "previous_hash": new_block.previous_hash,
                             "timestamp": new_block.timestamp
                         }
+
                         packets.append(new_packet)
 
-                    dict = {i: packets[i] for i in range(int(last_block), index + 1)}
+                    dict = {i: packets[i] for i in range(int(last_block)+1, index + 2)}
                     json_packet = json.dumps(dict)
+                    print("\n")
+                    print("DEBUG_SEMI_UPDATE")
                     print(json_packet)
                     sock1.sendto(json_packet.encode(), ("224.0.0.0", 2001))
 

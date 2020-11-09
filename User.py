@@ -212,8 +212,9 @@ def update_blockchain():
         print(update)
         return
     else:
-        update.decode()
-        dict = json.loads(update)
+        tmp=update.decode()
+        print("DEBUG_JSON_ARRIVED "+tmp)
+        dict = json.loads(tmp)
         blocks=[]
         print("DEBUG_UPDATE"+"".join(dict))
         for i in dict:
