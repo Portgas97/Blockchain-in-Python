@@ -14,12 +14,12 @@ from Block import Block
 import hashlib
 import time
 
-from ServerListener import update2
+from ServerListener import ServerThreadListener
 
 hash = "SHA-256"
 public_key = 0
 private_key = 0
-
+buffer=""
 ###############################################################################
 #                    FUNZIONI CRITTOGRAFICHE DI UTILITÀ
 ##############################################################################
@@ -156,50 +156,60 @@ def send_money(private_key: Crypto.PublicKey.RSA.RsaKey, sender):
 
     sign_of_transaction = sign(packet.__str__().encode(), private_key, "SHA-256")
 
-    print("Messaggio user (sign_of_transaction):")
-    print(sign_of_transaction)
+    #print("Messaggio user (sign_of_transaction):")
+    #print(sign_of_transaction)
 
     # creazione del socket per trasmettere, invio della transazione in formato JSON, firma appesa in seguito
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
     # divisore per fare la split lato ricevente
-    print("DEBUG_LOG: chiamata a send_to() dentro a send_money()")
+    #print("DEBUG_LOG: chiamata a send_to() dentro a send_money()")
     sock.sendto((message_to_send + "divisore").encode() + sign_of_transaction, ("224.0.0.0", 2000))
 
 
 
 def exists_blockchain():
-    print("DEBUG_LOG: chiamata a exists_blockchain()")
+    server_listener = ServerThreadListener()
+    server_listener.start()
+    #print("DEBUG_LOG: chiamata a exists_blockchain()")
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
-    # sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-    sock1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-    sock1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock1.bind(('', 2001))
-    mreq = struct.pack("=4sl", socket.inet_aton("224.0.0.0"), socket.INADDR_ANY)
-    sock1.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+    #sock1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+    #sock1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    #sock1.bind(('', 2001))
+    #mreq = struct.pack("=4sl", socket.inet_aton("224.0.0.0"), socket.INADDR_ANY)
+    #sock1.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
     sock.sendto("exists".encode(), ("224.0.0.0", 2000))
 
     # dopo 1 secondo se nessuno risponde ritorno False
-    sock1.settimeout(1)
+    #sock1.settimeout(1)
     # dimensione del buffer
     try:
-        exists = sock1.recv(10240)
+        server_listener.join(timeout=1)
+        ###time.sleep(1)
+        ##exists=get_buffer()
+        #exists = sock1.recv(10240)
+        #print("DEBUG Exists:"+ buffer)
     except:
-        print("DEBUG_LOG: terminazione exists_blockchain, valore di ritorno: False, causa: recv scaduta\n")
+        #print("DEBUG_LOG: terminazione exists_blockchain, valore di ritorno: False, causa: recv scaduta\n")
         return False
-    if exists.decode() == "False":
-        print("DEBUG_LOG: terminazione exists_blockchain, valore di ritorno: False, causa: valore di ritorno == False\n")
+    #if exists.decode() == "False":
+    if buffer == "False":
+        #print("DEBUG_LOG: terminazione exists_blockchain, valore di ritorno: False, causa: valore di ritorno == False\n")
         return False
-    if exists.decode() == "True":
-        print("DEBUG_LOG: terminazione exists_blockchain, valore di ritorno: True, causa: valore di ritorno == True\n")
+    #if exists.decode() == "True":
+    if buffer == "True":
+        #print("DEBUG_LOG: terminazione exists_blockchain, valore di ritorno: True, causa: valore di ritorno == True\n")
         return True
 
 
 
 def update_blockchain():
+    server_listener = ServerThreadListener()
+    server_listener.start()
     global public_key
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
@@ -210,7 +220,11 @@ def update_blockchain():
     else:
         # lo spazio dopo update serve come divisore in Listener.py
         sock.sendto("update ".encode() + str(BlockChain.local_blockchain.last_block().index).encode()+ " ".encode() + str(public_key.n).encode() + "_".encode() + str(public_key.e).encode(), ("224.0.0.0", 2000))
-
+    try:
+        server_listener.join(1)
+    except:
+        print("timeout")
+        return False
     #sock1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     #sock1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     #sock1.bind(('', 2001))
@@ -220,8 +234,9 @@ def update_blockchain():
     #sock1.settimeout(10)
     # dimensione del buffer
     #update = sock1.recv(10240).decode()
-    update=update2
-
+    ##time.sleep(1)
+    update=buffer
+    #print(update)
     if update == "index_error":
         print("Wrong index")
         return
@@ -229,10 +244,15 @@ def update_blockchain():
         print(update)
         return
     else:
-        print("DEBUG_JSON_ARRIVED "+update)
-        dict = json.loads(update)
+        #print("DEBUG_JSON_ARRIVED "+update)
+        try:
+            dict = json.loads(update)
+        except:
+            print("An error occurs, i'm retrying.")
+            return update_blockchain()
+
         blocks=[]
-        print("DEBUG_UPDATE"+"".join(dict))
+        #print("DEBUG_UPDATE"+"".join(dict))
         for i in dict:
             i_dict=dict[i]
             i_index=i_dict['index']

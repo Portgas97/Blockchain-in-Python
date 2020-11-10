@@ -44,6 +44,8 @@ else:
 # User.send_money(private, public)
 print("Checking Blockchain: operation started")
 
+
+
 if not User.exists_blockchain():
     print("Creating Genesis Block\n")
     print("DEBUG_LOG: chiamata a create_genesis()")
@@ -59,8 +61,7 @@ print("Checking Blockchain: operation terminated\n")
 print("DEBUG_LOG: avvio del thread listener")
 listener = ThreadListener()
 listener.start()
-server_listener= ServerThreadListener()
-server_listener.start()
+
 
 
 

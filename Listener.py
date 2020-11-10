@@ -71,11 +71,10 @@ class ThreadListener(Thread):
                     packets = []
                     for i in range(0, index + 1):
                         new_block = local_blockchain.get_chain()[i]
-                        print("DEGUG_LOG"+ str(new_block.index))
+                        #print("DEGUG_LOG"+ str(new_block.index))
                         transactions = new_block.transactions
-                        print(transactions)
+                        #print(transactions)
                         dict_tra = []
-                        # TO CHECK: non ci vuole len + 1 ?
                         for j in range (0, len(transactions)):
                             new_dict = {
                                 "sender": transactions[j].sender,
@@ -86,7 +85,7 @@ class ThreadListener(Thread):
 
                             dict_tra.append(new_dict)
 
-                        print(dict_tra)
+                        #print(dict_tra)
                         dict_transactions = {k: dict_tra[k] for k in range(0, len(transactions))}
 
                         new_packet = {
@@ -106,9 +105,8 @@ class ThreadListener(Thread):
 
                 # CASO IN CUI NON C'È BISOGNO DI AGGIORNARE
                 elif int(last_block) == BlockChain.local_blockchain.last_block().index:
-                    print("DEBUG last block:" + last_block)
-                    print("DEBUG localblockchain.lastblock"+str(BlockChain.local_blockchain.last_block().index))
-                    time.sleep(1/10)
+                    #print("DEBUG last block:" + last_block)
+                    #print("DEBUG localblockchain.lastblock"+str(BlockChain.local_blockchain.last_block().index))
                     sock1.sendto("Already up to date".encode(), ("224.0.0.0", 2001))
 
                 # CASO IN CUI C'È UN AGGIORNAMENTO PARZIALE
@@ -117,9 +115,9 @@ class ThreadListener(Thread):
                     packets=[]
                     for i in range(0, index + 1):
                         new_block = local_blockchain.get_chain()[i]
-                        print("DEGUG_LOG" + str(new_block.index))
+                        #print("DEGUG_LOG" + str(new_block.index))
                         transactions = new_block.transactions
-                        print(transactions)
+                        #print(transactions)
                         dict_tra = []
                         for j in range(0, len(transactions)):
                             new_dict = {
@@ -131,7 +129,7 @@ class ThreadListener(Thread):
 
                             dict_tra.append(new_dict)
 
-                        print(dict_tra)
+                        #print(dict_tra)
                         dict_transactions = {k: dict_tra[k] for k in range(0, len(transactions))}
 
                         new_packet = {
@@ -143,18 +141,18 @@ class ThreadListener(Thread):
                         }
 
                         packets.append(new_packet)
-                    print("DEBUG PACCKETS")
-                    print(packets)
+                    #print("DEBUG PACCKETS")
+                    #print(packets)
                     dict = {i: packets[i] for i in range(int(last_block)+1, index + 1)}
                     json_packet = json.dumps(dict)
-                    print("\n")
-                    print("DEBUG_SEMI_UPDATE")
-                    print(json_packet)
+                    #print("\n")
+                    #print("DEBUG_SEMI_UPDATE")
+                    #print(json_packet)
                     sock1.sendto(json_packet.encode(), ("224.0.0.0", 2001))
 
                 # CASO DI INDICE NON VALIDO
                 elif int(last_block) > BlockChain.local_blockchain.last_block().index:
-                    print("Index not valid")
+                    #print("Index not valid")
                     sock1.sendto("index_error".encode(), ("224.0.0.0", 2001))
 
             # Ricezione di una transazione
@@ -168,14 +166,14 @@ class ThreadListener(Thread):
 
                 message_arrived = recv.split(b'divisore')
                 sign = message_arrived[1]
-                print("DEBUG_LOG: dentro listener, ricezione delle transazioni, stampa della FIRMA ricevuta:\n")
-                print(sign)
-                print(" ")
+                #print("DEBUG_LOG: dentro listener, ricezione delle transazioni, stampa della FIRMA ricevuta:\n")
+                #print(sign)
+                #print(" ")
 
                 message = json.loads(message_arrived[0])
-                print("DEBUG_LOG: dentro listener, ricezione della transazioni, stampa del MESSAGGIO ricevuto:\n")
-                print(message)
-                print(" ")
+                #print("DEBUG_LOG: dentro listener, ricezione della transazioni, stampa del MESSAGGIO ricevuto:\n")
+                #print(message)
+                #print(" ")
 
                 # ricavo i sottocampi
                 message_sender_n = message["sender_n"]
@@ -195,25 +193,25 @@ class ThreadListener(Thread):
 
                 ##### PUNTO 3 #####
                 key_received = str(message_sender_n) + "_" + str(message_sender_e)
-                print("LOG_DEBUG: key_received: " + key_received + "\n")
+                #print("LOG_DEBUG: key_received: " + key_received + "\n")
                 local_private_key = str(User.public_key.n) + "_" + str(User.public_key.e)
-                print("LOG_DEBUG: local_private_key: " + local_private_key + "\n")
+                #print("LOG_DEBUG: local_private_key: " + local_private_key + "\n")
 
                 if key_received == local_private_key:
                     # torno in ascolto
                     local_blockchain.create_transaction(key_received,message_amount,str(message_receiver_n)+"_"+str(message_reveicer_e),message_timestamp)
-                    print("DEBUG_LOG: il thread listener ha ricevuto una transazione creata in locale")
+                    #print("DEBUG_LOG: il thread listener ha ricevuto una transazione creata in locale")
                     continue
                 ## FINE PUNTO 3 ##
 
                 sender_key = RSA.construct([message_sender_n, message_sender_e])
 
                 ##### PUNTO 4 #####
-                print("DEBUG_LOG: chiamata a verify()")
+                #print("DEBUG_LOG: chiamata a verify()")
                 is_valid = User.verify(message.__str__().encode(), sign, sender_key)
                 #print("Messaggio listener")
                 #print(sign)
-                print("Transiction is valid:" + str(is_valid))
+                #print("Transiction is valid:" + str(is_valid))
                 ## FINE PUNTO 4 ##
 
                 number_of_transactions=number_of_transactions+1
@@ -221,10 +219,10 @@ class ThreadListener(Thread):
                 local_blockchain.create_transaction(str(message_sender_n)+"_"+str(message_sender_e),message_amount, str(message_receiver_n)+"_"+str(message_reveicer_e),message_timestamp)
                 # Se ho raccolto un numero sufficiente di transazioni comincio a minare il blocco
                 if number_of_transactions==2:
-                    print("DEBUG_LOG: dentro listener, comincia l'operazione di mining")
-                    print("DEBUG_LOG: number_of_transactions: " + str(number_of_transactions))
+                    #print("DEBUG_LOG: dentro listener, comincia l'operazione di mining")
+                    #print("DEBUG_LOG: number_of_transactions: " + str(number_of_transactions))
                     number_of_transactions=0
                     local_blockchain.mine(User.public_key,local_blockchain.pending_transactions())
-                    print("DEBUG_LOG: dentro a listener, terminata la fase di mining del blocco")
+                    #print("DEBUG_LOG: dentro a listener, terminata la fase di mining del blocco")
 
     # TODO Mining

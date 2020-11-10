@@ -72,9 +72,9 @@ class Blockchain:
         self.create_transaction(sender="0", amount=50, receiver=str(reward_address.n) + "_" + str(reward_address.e))
 
         # definizione di Mining
-        print("DEBUG_LOG: chiamata a generate_proof_of_work() dentro a mine()")
+        #print("DEBUG_LOG: chiamata a generate_proof_of_work() dentro a mine()")
         nonce = self.generate_proof_of_work(new_block_transactions)
-        print("DEBUG_LOG: generate_proof_of_work() dentro a mine() terminata")
+        #print("DEBUG_LOG: generate_proof_of_work() dentro a mine() terminata")
 
         # transaction to reward the miner, no sender
 
@@ -182,13 +182,13 @@ class Blockchain:
                     amount += int(j.amount)
                 if j.sender == str(public_key.n)+"_"+str(public_key.e):
                     amount -= int(j.amount)
-        print("DEBUG_COUNT MONEY"+str(amount))
+        #print("DEBUG_COUNT MONEY"+str(amount))
         for i in self.__current_transactions:
             if i.receiver == str(public_key.n) + "_" + str(public_key.e):
                 amount += int(i.amount)
             if i.sender == str(public_key.n) + "_" + str(public_key.e):
                 amount -= int(i.amount)
-        print("DEBUG_COUNT MONEY"+str(amount))
+        #print("DEBUG_COUNT MONEY"+str(amount))
         return amount
 
 
