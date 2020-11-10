@@ -29,7 +29,7 @@ if op == "register":
     print("Registrazione in corso...")
     print("DEBUG_LOG: chiamata a User.register()")
     public, private = User.register()
-    time.sleep(2)
+    #time.sleep(2)
 else:
     if op == "login":
         print("Insert your private key:")
@@ -104,7 +104,7 @@ while True:
 
 
 
-time.sleep(10)
+#time.sleep(10)
 print("sleep in User.py terminata")
 
 print("####### FINE DEMO #######")
