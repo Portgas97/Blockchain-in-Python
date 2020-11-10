@@ -1,6 +1,6 @@
 import User
 from Listener import ThreadListener
-from ServerListener import ServerThreadListener
+from ServerListener import BlockListener
 from BlockChain import local_blockchain, Blockchain
 import os
 import signal
@@ -62,7 +62,8 @@ print("DEBUG_LOG: avvio del thread listener")
 listener = ThreadListener()
 listener.start()
 
-
+block_listener=BlockListener()
+block_listener.start()
 
 
 

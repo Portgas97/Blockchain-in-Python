@@ -222,7 +222,38 @@ class ThreadListener(Thread):
                     #print("DEBUG_LOG: dentro listener, comincia l'operazione di mining")
                     #print("DEBUG_LOG: number_of_transactions: " + str(number_of_transactions))
                     number_of_transactions=0
-                    local_blockchain.mine(User.public_key,local_blockchain.pending_transactions())
+                    block_mined=local_blockchain.mine(User.public_key,local_blockchain.pending_transactions())
+                    print("Bloc_mined")
+                    print(block_mined)
+                    new_packet=""
+                    if block_mined is not None:
+                        print("Debug-I'm sending the block just mined!")
+                        transactions = block_mined.transactions
+                        # print(transactions)
+                        dict_tra = []
+                        for j in range(0, len(transactions)):
+                            new_dict = {
+                                "sender": transactions[j].sender,
+                                "amount": transactions[j].amount,
+                                "receiver": transactions[j].receiver,
+                                "timestamp": transactions[j].timestamp,
+                            }
+
+                            dict_tra.append(new_dict)
+
+                        # print(dict_tra)
+                        dict_transactions = {k: dict_tra[k] for k in range(0, len(transactions))}
+
+                        new_packet = {
+                            "index": block_mined.index,
+                            "transactions": dict_transactions,
+                            "nonce": block_mined.nonce,
+                            "previous_hash": block_mined.previous_hash,
+                            "timestamp": block_mined.timestamp
+                        }
+                    json_block=json.dumps(new_packet)
+                    sock1.sendto(json_block.encode(), ("224.0.0.0", 2002))
+
                     #print("DEBUG_LOG: dentro a listener, terminata la fase di mining del blocco")
 
     # TODO Mining

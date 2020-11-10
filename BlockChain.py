@@ -191,6 +191,8 @@ class Blockchain:
         #print("DEBUG_COUNT MONEY"+str(amount))
         return amount
 
+    def remove_tail(self,index):
+        self.__chain=self.__chain[0:index]
 
 # AGGIUNGI TEST
 
