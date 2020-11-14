@@ -32,7 +32,6 @@ class Blockchain:
             return True
         return False
 
-
     def last_block(self):
         if not self.__chain:
             return []
@@ -50,8 +49,8 @@ class Blockchain:
     def get_last_hash(self):
         return self.__chain[-1].block_hash
 
-    def create_transaction(self, sender, amount, receiver, timestamp=time()):
-        transaction = Transaction(sender, amount, receiver,timestamp)
+    def create_transaction(self, sender, amount, receiver, sign, timestamp=time()):
+        transaction = Transaction(sender, amount, receiver, sign, timestamp)
 
         if transaction.validate():  # todo aggiungere controllo soldi disponibili a validate()
             self.__current_transactions.append(transaction)
@@ -67,14 +66,14 @@ class Blockchain:
         else:
             index = last_block.index + 1
             previous_hash = last_block.block_hash
-            print("ramo else"+str(index))
-
-        self.create_transaction(sender="0", amount=50, receiver=str(reward_address.n) + "_" + str(reward_address.e))
+            print("ramo else" + str(index))
+        #aggiungere controllo su amount e sign
+        self.create_transaction(sender="0", amount=50, receiver=str(reward_address.n) + "_" + str(reward_address.e), sign="reward")
 
         # definizione di Mining
-        #print("DEBUG_LOG: chiamata a generate_proof_of_work() dentro a mine()")
+        # print("DEBUG_LOG: chiamata a generate_proof_of_work() dentro a mine()")
         nonce = self.generate_proof_of_work(new_block_transactions)
-        #print("DEBUG_LOG: generate_proof_of_work() dentro a mine() terminata")
+        # print("DEBUG_LOG: generate_proof_of_work() dentro a mine() terminata")
 
         # transaction to reward the miner, no sender
 
@@ -97,12 +96,13 @@ class Blockchain:
         while True:
             # concatenazione dei parametri su cui calcolare l'hash
             if not local_blockchain.last_block():
-                string_to_hash=""
+                string_to_hash = ""
                 for i in range(0, len(self.__current_transactions)):
-                    string_to_hash += block_transactions[i].sender+str(block_transactions[i].amount)+ block_transactions[i].receiver +str(block_transactions[i].timestamp)
+                    string_to_hash += block_transactions[i].sender + str(block_transactions[i].amount) + \
+                                      block_transactions[i].receiver + str(block_transactions[i].timestamp)
                 string_to_hash += self.initial_hash + str(nonce)
             else:
-                string_to_hash=""
+                string_to_hash = ""
                 for i in range(0, len(self.__current_transactions)):
                     string_to_hash += block_transactions[i].sender + str(block_transactions[i].amount) + \
                                       block_transactions[i].receiver + str(block_transactions[i].timestamp)
@@ -121,7 +121,6 @@ class Blockchain:
             nonce += 1
             number += 1
 
-
     def validate_block(self, current_block, previous_block: list):
         if not previous_block and current_block.index == 0:
             return True
@@ -132,7 +131,7 @@ class Blockchain:
         if current_block.previous_hash != previous_block.block_hash:
             return False
 
-        string_to_hash=""
+        string_to_hash = ""
         for i in current_block.transactions:
             string_to_hash += str(i.sender) + str(i.amount) + str(i.receiver)
         string_to_hash += str(self.last_block().block_hash)
@@ -174,25 +173,26 @@ class Blockchain:
         for block in new_blocks:
             self.add_block(block)
 
-    def count_money(self, public_key : RSA.RsaKey):
-        amount=0
+    def count_money(self, public_key: RSA.RsaKey):
+        amount = 0
         for i in self.__chain:
             for j in i.transactions:
-                if j.receiver == str(public_key.n)+"_"+str(public_key.e):
+                if j.receiver == str(public_key.n) + "_" + str(public_key.e):
                     amount += int(j.amount)
-                if j.sender == str(public_key.n)+"_"+str(public_key.e):
+                if j.sender == str(public_key.n) + "_" + str(public_key.e):
                     amount -= int(j.amount)
-        #print("DEBUG_COUNT MONEY"+str(amount))
+        # print("DEBUG_COUNT MONEY"+str(amount))
         for i in self.__current_transactions:
             if i.receiver == str(public_key.n) + "_" + str(public_key.e):
                 amount += int(i.amount)
             if i.sender == str(public_key.n) + "_" + str(public_key.e):
                 amount -= int(i.amount)
-        #print("DEBUG_COUNT MONEY"+str(amount))
+        # print("DEBUG_COUNT MONEY"+str(amount))
         return amount
 
-    def remove_tail(self,index):
-        self.__chain=self.__chain[0:index]
+    def remove_tail(self, index):
+        self.__chain = self.__chain[0:index]
+
 
 # AGGIUNGI TEST
 

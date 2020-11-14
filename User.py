@@ -6,6 +6,7 @@ from Crypto.Cipher import PKCS1_OAEP
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA512, SHA384, SHA256, SHA, MD5
 from Crypto import Random
+from Crypto.Util import number
 from Transaction import Transaction
 import json
 import BlockChain
@@ -13,6 +14,7 @@ from BlockChain import local_blockchain
 from Block import Block
 import hashlib
 import time
+import base64
 
 from ServerListener import ServerThreadListener
 
@@ -142,20 +144,24 @@ def send_money(private_key: Crypto.PublicKey.RSA.RsaKey, sender):
 
     receiver_public_key = RSA.construct([n, e])
 
-    new_transaction = Transaction(sender, amount, receiver_public_key)
 
     packet = {
-        "sender_n": new_transaction.sender.n,
-        "sender_e": new_transaction.sender.e,
-        "amount": new_transaction.amount,
-        "receiver_n": new_transaction.receiver.n,
-        "receiver_e": new_transaction.receiver.e,
-        "timestamp": new_transaction.timestamp
+        "sender_n": sender.n,
+        "sender_e": sender.e,
+        "amount": amount,
+        "receiver_n": receiver_public_key.n,
+        "receiver_e": receiver_public_key.e,
+        "timestamp": time.time()
     }
-    message_to_send = json.dumps(packet)
-
+    #message_to_send = json.dumps(packet)
     sign_of_transaction = sign(packet.__str__().encode(), private_key, "SHA-256")
-
+    new_transaction = Transaction(sender, amount, receiver_public_key,f"{sign_of_transaction}", packet["timestamp"])
+    #packet["sign"]=sign_of_transaction
+    #packet["sign"]=number.bytes_to_long(sign_of_transaction)
+    packet["sign"]=f"{sign_of_transaction}"
+    print("chiave generata")
+    print(sign_of_transaction)
+    message_to_send = json.dumps(packet)
     #print("Messaggio user (sign_of_transaction):")
     #print(sign_of_transaction)
 
@@ -267,6 +273,7 @@ def update_blockchain():
                 tmp_amount=tmp['amount']
                 tmp_receiver=tmp['receiver']
                 tmp_timestamp=tmp['timestamp']
+                tmp_sign=tmp['sign']
                 new_transaction=Transaction(tmp_sender,tmp_amount,tmp_receiver,tmp_timestamp)
                 transactions.append(new_transaction)
             new_block=Block(i_index,transactions,i_nonce,i_previous_hash,i_timestamp)

@@ -1,3 +1,4 @@
+import base64
 import time
 from threading import Thread
 
@@ -10,6 +11,7 @@ import BlockChain
 import Block
 from BlockChain import local_blockchain
 import hashlib
+
 
 class ThreadListener(Thread):
 
@@ -38,7 +40,7 @@ class ThreadListener(Thread):
         sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
         # count transactions
-        number_of_transactions=0
+        number_of_transactions = 0
 
         while True:
             print("DEBUG_LOG: Listener torna ad eseguire while true, ascolto...")
@@ -46,7 +48,7 @@ class ThreadListener(Thread):
 
             msg = " "
             try:
-                msg=recv.decode()
+                msg = recv.decode()
             except:
                 print(msg)
 
@@ -61,8 +63,8 @@ class ThreadListener(Thread):
             elif msg[:6] == "update":
                 tmp = recv.decode().split(" ")
                 last_block = tmp[1]
-                received_public_key=tmp[2]
-                if received_public_key == str(User.public_key.n)+"_"+str(User.public_key.e):
+                received_public_key = tmp[2]
+                if received_public_key == str(User.public_key.n) + "_" + str(User.public_key.e):
                     print("non rispondo a me stesso")
                     continue
                 # CASO IN CUI IL MITTENTE NON HA NIENTE
@@ -71,21 +73,22 @@ class ThreadListener(Thread):
                     packets = []
                     for i in range(0, index + 1):
                         new_block = local_blockchain.get_chain()[i]
-                        #print("DEGUG_LOG"+ str(new_block.index))
+                        # print("DEGUG_LOG"+ str(new_block.index))
                         transactions = new_block.transactions
-                        #print(transactions)
+                        # print(transactions)
                         dict_tra = []
-                        for j in range (0, len(transactions)):
+                        for j in range(0, len(transactions)):
                             new_dict = {
                                 "sender": transactions[j].sender,
                                 "amount": transactions[j].amount,
                                 "receiver": transactions[j].receiver,
                                 "timestamp": transactions[j].timestamp,
+                                "sign": transactions[j].sign
                             }
 
                             dict_tra.append(new_dict)
 
-                        #print(dict_tra)
+                        # print(dict_tra)
                         dict_transactions = {k: dict_tra[k] for k in range(0, len(transactions))}
 
                         new_packet = {
@@ -105,19 +108,19 @@ class ThreadListener(Thread):
 
                 # CASO IN CUI NON C'È BISOGNO DI AGGIORNARE
                 elif int(last_block) == BlockChain.local_blockchain.last_block().index:
-                    #print("DEBUG last block:" + last_block)
-                    #print("DEBUG localblockchain.lastblock"+str(BlockChain.local_blockchain.last_block().index))
+                    # print("DEBUG last block:" + last_block)
+                    # print("DEBUG localblockchain.lastblock"+str(BlockChain.local_blockchain.last_block().index))
                     sock1.sendto("Already up to date".encode(), ("224.0.0.0", 2001))
 
                 # CASO IN CUI C'È UN AGGIORNAMENTO PARZIALE
                 elif int(last_block) < BlockChain.local_blockchain.last_block().index:
                     index = BlockChain.local_blockchain.last_block().index
-                    packets=[]
+                    packets = []
                     for i in range(0, index + 1):
                         new_block = local_blockchain.get_chain()[i]
-                        #print("DEGUG_LOG" + str(new_block.index))
+                        # print("DEGUG_LOG" + str(new_block.index))
                         transactions = new_block.transactions
-                        #print(transactions)
+                        # print(transactions)
                         dict_tra = []
                         for j in range(0, len(transactions)):
                             new_dict = {
@@ -125,11 +128,12 @@ class ThreadListener(Thread):
                                 "amount": transactions[j].amount,
                                 "receiver": transactions[j].receiver,
                                 "timestamp": transactions[j].timestamp,
+                                "sign": transactions[j].sign
                             }
 
                             dict_tra.append(new_dict)
 
-                        #print(dict_tra)
+                        # print(dict_tra)
                         dict_transactions = {k: dict_tra[k] for k in range(0, len(transactions))}
 
                         new_packet = {
@@ -141,18 +145,18 @@ class ThreadListener(Thread):
                         }
 
                         packets.append(new_packet)
-                    #print("DEBUG PACCKETS")
-                    #print(packets)
-                    dict = {i: packets[i] for i in range(int(last_block)+1, index + 1)}
+                    # print("DEBUG PACCKETS")
+                    # print(packets)
+                    dict = {i: packets[i] for i in range(int(last_block) + 1, index + 1)}
                     json_packet = json.dumps(dict)
-                    #print("\n")
-                    #print("DEBUG_SEMI_UPDATE")
-                    #print(json_packet)
+                    # print("\n")
+                    # print("DEBUG_SEMI_UPDATE")
+                    # print(json_packet)
                     sock1.sendto(json_packet.encode(), ("224.0.0.0", 2001))
 
                 # CASO DI INDICE NON VALIDO
                 elif int(last_block) > BlockChain.local_blockchain.last_block().index:
-                    #print("Index not valid")
+                    # print("Index not valid")
                     sock1.sendto("index_error".encode(), ("224.0.0.0", 2001))
 
             # Ricezione di una transazione
@@ -166,25 +170,28 @@ class ThreadListener(Thread):
 
                 message_arrived = recv.split(b'divisore')
                 sign = message_arrived[1]
-                #print("DEBUG_LOG: dentro listener, ricezione delle transazioni, stampa della FIRMA ricevuta:\n")
-                #print(sign)
-                #print(" ")
 
-                message = json.loads(message_arrived[0])
-                #print("DEBUG_LOG: dentro listener, ricezione della transazioni, stampa del MESSAGGIO ricevuto:\n")
-                #print(message)
-                #print(" ")
+                # print("DEBUG_LOG: dentro listener, ricezione delle transazioni, stampa della FIRMA ricevuta:\n")
+                # print(sign)
+                # print(" ")
+
+                message = json.loads(message_arrived[0].decode())
+                # print("DEBUG_LOG: dentro listener, ricezione della transazioni, stampa del MESSAGGIO ricevuto:\n")
+                # print(message)
+                # print(" ")
 
                 # ricavo i sottocampi
                 message_sender_n = message["sender_n"]
                 message_sender_e = message["sender_e"]
-                message_amount=message["amount"]
+                message_amount = message["amount"]
                 message_receiver_n = message["receiver_n"]
                 message_reveicer_e = message["receiver_e"]
-                message_timestamp=message["timestamp"]
-
+                message_timestamp = message["timestamp"]
+                message_sign=eval(message["sign"])
+                print(message_sign)
+                print(type(message_sign))
                 ##### PUNTO 1 #####
-
+                message.pop("sign")
                 ## FINE PUNTO 1 ##
 
                 ##### PUNTO 2 #####
@@ -193,39 +200,44 @@ class ThreadListener(Thread):
 
                 ##### PUNTO 3 #####
                 key_received = str(message_sender_n) + "_" + str(message_sender_e)
-                #print("LOG_DEBUG: key_received: " + key_received + "\n")
+                # print("LOG_DEBUG: key_received: " + key_received + "\n")
                 local_private_key = str(User.public_key.n) + "_" + str(User.public_key.e)
-                #print("LOG_DEBUG: local_private_key: " + local_private_key + "\n")
+                # print("LOG_DEBUG: local_private_key: " + local_private_key + "\n")
 
                 if key_received == local_private_key:
                     # torno in ascolto
-                    local_blockchain.create_transaction(key_received,message_amount,str(message_receiver_n)+"_"+str(message_reveicer_e),message_timestamp)
-                    #print("DEBUG_LOG: il thread listener ha ricevuto una transazione creata in locale")
+                    local_blockchain.create_transaction(key_received, message_amount,
+                                                        str(message_receiver_n) + "_" + str(message_reveicer_e),
+                                                        message_timestamp)
+                    # print("DEBUG_LOG: il thread listener ha ricevuto una transazione creata in locale")
                     continue
                 ## FINE PUNTO 3 ##
 
                 sender_key = RSA.construct([message_sender_n, message_sender_e])
 
                 ##### PUNTO 4 #####
-                #print("DEBUG_LOG: chiamata a verify()")
-                is_valid = User.verify(message.__str__().encode(), sign, sender_key)
-                #print("Messaggio listener")
-                #print(sign)
-                #print("Transiction is valid:" + str(is_valid))
+                # print("DEBUG_LOG: chiamata a verify()")
+                is_valid = User.verify(message.__str__().encode(), message_sign, sender_key)
+                # print("Messaggio listener")
+                # print(sign)
+                #print(eval(message_sign))
+                print("Transiction is valid:" + str(is_valid))
                 ## FINE PUNTO 4 ##
 
-                number_of_transactions=number_of_transactions+1
+                number_of_transactions = number_of_transactions + 1
                 # aggiorno la mia blockchain locale
-                local_blockchain.create_transaction(str(message_sender_n)+"_"+str(message_sender_e),message_amount, str(message_receiver_n)+"_"+str(message_reveicer_e),message_timestamp)
+                local_blockchain.create_transaction(str(message_sender_n) + "_" + str(message_sender_e), message_amount,
+                                                    str(message_receiver_n) + "_" + str(message_reveicer_e),
+                                                    message_timestamp)
                 # Se ho raccolto un numero sufficiente di transazioni comincio a minare il blocco
-                if number_of_transactions==2:
-                    #print("DEBUG_LOG: dentro listener, comincia l'operazione di mining")
-                    #print("DEBUG_LOG: number_of_transactions: " + str(number_of_transactions))
-                    number_of_transactions=0
-                    block_mined=local_blockchain.mine(User.public_key,local_blockchain.pending_transactions())
+                if number_of_transactions == 2:
+                    # print("DEBUG_LOG: dentro listener, comincia l'operazione di mining")
+                    # print("DEBUG_LOG: number_of_transactions: " + str(number_of_transactions))
+                    number_of_transactions = 0
+                    block_mined = local_blockchain.mine(User.public_key, local_blockchain.pending_transactions())
                     print("Bloc_mined")
                     print(block_mined)
-                    new_packet=""
+                    new_packet = ""
                     if block_mined is not None:
                         print("Debug-I'm sending the block just mined!")
                         transactions = block_mined.transactions
@@ -237,6 +249,7 @@ class ThreadListener(Thread):
                                 "amount": transactions[j].amount,
                                 "receiver": transactions[j].receiver,
                                 "timestamp": transactions[j].timestamp,
+                                "sign": transactions[j].sign
                             }
 
                             dict_tra.append(new_dict)
@@ -249,11 +262,12 @@ class ThreadListener(Thread):
                             "transactions": dict_transactions,
                             "nonce": block_mined.nonce,
                             "previous_hash": block_mined.previous_hash,
-                            "timestamp": block_mined.timestamp
+                            "timestamp": block_mined.timestamp,
+
                         }
-                    json_block=json.dumps(new_packet)
+                    json_block = json.dumps(new_packet)
                     sock1.sendto(json_block.encode(), ("224.0.0.0", 2002))
 
-                    #print("DEBUG_LOG: dentro a listener, terminata la fase di mining del blocco")
+                    # print("DEBUG_LOG: dentro a listener, terminata la fase di mining del blocco")
 
     # TODO Mining
