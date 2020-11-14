@@ -83,7 +83,7 @@ class ThreadListener(Thread):
                                 "amount": transactions[j].amount,
                                 "receiver": transactions[j].receiver,
                                 "timestamp": transactions[j].timestamp,
-                                "sign": transactions[j].sign
+                                "sign": f"{transactions[j].sign}"
                             }
 
                             dict_tra.append(new_dict)
@@ -128,7 +128,7 @@ class ThreadListener(Thread):
                                 "amount": transactions[j].amount,
                                 "receiver": transactions[j].receiver,
                                 "timestamp": transactions[j].timestamp,
-                                "sign": transactions[j].sign
+                                "sign": f"{transactions[j].sign}"
                             }
 
                             dict_tra.append(new_dict)
@@ -218,6 +218,7 @@ class ThreadListener(Thread):
                 ##### PUNTO 4 #####
                 # print("DEBUG_LOG: chiamata a verify()")
                 is_valid = User.verify(message.__str__().encode(), message_sign, sender_key)
+
                 # print("Messaggio listener")
                 # print(sign)
                 #print(eval(message_sign))
@@ -227,8 +228,8 @@ class ThreadListener(Thread):
                 number_of_transactions = number_of_transactions + 1
                 # aggiorno la mia blockchain locale
                 local_blockchain.create_transaction(str(message_sender_n) + "_" + str(message_sender_e), message_amount,
-                                                    str(message_receiver_n) + "_" + str(message_reveicer_e),
-                                                    message_timestamp)
+                                                    str(message_receiver_n) + "_" + str(message_reveicer_e), message_sign,
+                                                    message_timestamp) #message sign already evaluated
                 # Se ho raccolto un numero sufficiente di transazioni comincio a minare il blocco
                 if number_of_transactions == 2:
                     # print("DEBUG_LOG: dentro listener, comincia l'operazione di mining")
@@ -249,7 +250,7 @@ class ThreadListener(Thread):
                                 "amount": transactions[j].amount,
                                 "receiver": transactions[j].receiver,
                                 "timestamp": transactions[j].timestamp,
-                                "sign": transactions[j].sign
+                                "sign": f"{transactions[j].sign}"
                             }
 
                             dict_tra.append(new_dict)

@@ -68,7 +68,7 @@ class Blockchain:
             previous_hash = last_block.block_hash
             print("ramo else" + str(index))
         #aggiungere controllo su amount e sign
-        self.create_transaction(sender="0", amount=50, receiver=str(reward_address.n) + "_" + str(reward_address.e), sign="reward")
+        self.create_transaction(sender="0", amount=50, receiver=str(reward_address.n) + "_" + str(reward_address.e), sign=b"reward")
 
         # definizione di Mining
         # print("DEBUG_LOG: chiamata a generate_proof_of_work() dentro a mine()")

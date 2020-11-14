@@ -88,7 +88,7 @@ class BlockListener(Thread):
             tmp_receiver = tmp['receiver']
             tmp_timestamp = tmp['timestamp']
             tmp_sign = tmp['sign']
-            new_transaction = Transaction(tmp_sender, tmp_amount, tmp_receiver, tmp_timestamp)
+            new_transaction = Transaction(tmp_sender, tmp_amount, tmp_receiver, eval(tmp_sign), tmp_timestamp)
             transactions.append(new_transaction)
         new_block = Block(i_index, transactions, i_nonce, i_previous_hash, i_timestamp)
 
