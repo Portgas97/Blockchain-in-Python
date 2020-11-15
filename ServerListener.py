@@ -1,16 +1,16 @@
-import time
+from BlockChain import local_blockchain
+from Transaction import Transaction
 from threading import Thread, RLock
-
+from Crypto.PublicKey import RSA
+from Block import Block
+import BlockChain
+import hashlib
 import socket
 import struct
-from Crypto.PublicKey import RSA
 import User
+import time
 import json
-import BlockChain
-from Block import Block
-from BlockChain import local_blockchain
-import hashlib
-from Transaction import Transaction
+
 mutex = RLock()
 
 def set_buffer(tmp: str):
@@ -49,7 +49,6 @@ class ServerThreadListener(Thread):
 
 
 class BlockListener(Thread):
-    print("ciao")
 
     def run(self):
         # creazione del socket, utilizza IPv4, di tipo UDP
@@ -72,15 +71,19 @@ class BlockListener(Thread):
 
         # print("DEBUG_LOG: Listener torna ad eseguire while true, ascolto...")
         buffer = sock1.recv(10240).decode()
+
         block_received=json.loads(buffer)
-        print("BLOCK LISTENER")
-        print(buffer)
+
+        # print("BLOCK LISTENER")
+        # print(buffer)
         i_index = block_received['index']
         i_transactions = block_received['transactions']
         i_nonce = block_received['nonce']
         i_previous_hash = block_received['previous_hash']
         i_timestamp = block_received['timestamp']
+
         transactions = []
+
         for j in i_transactions:
             tmp = i_transactions[j]
             tmp_sender = tmp['sender']
@@ -90,12 +93,13 @@ class BlockListener(Thread):
             tmp_sign = tmp['sign']
             new_transaction = Transaction(tmp_sender, tmp_amount, tmp_receiver, eval(tmp_sign), tmp_timestamp)
             transactions.append(new_transaction)
+
         new_block = Block(i_index, transactions, i_nonce, i_previous_hash, i_timestamp)
 
         try:
             block_interested=local_blockchain.get_chain()[new_block.index]
         except:
-            print("Il blocco non esiste")
+            print("The block does not exists alreay, adding block to the Blockchain")
             local_blockchain.add_block(new_block)
             return
 
@@ -103,4 +107,3 @@ class BlockListener(Thread):
             local_blockchain.remove_tail(new_block.index)
             print("DEBUG BLOCK LISTENER")
             print(local_blockchain.add_block(new_block))
-

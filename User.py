@@ -1,27 +1,27 @@
+from Crypto.Hash import SHA512, SHA384, SHA256, SHA, MD5
+from ServerListener import ServerThreadListener
+from Crypto.Signature import PKCS1_v1_5
+from BlockChain import local_blockchain
+from Crypto.Cipher import PKCS1_OAEP
+from Transaction import Transaction
+from Crypto.PublicKey import RSA
+from Crypto.Util import number
+from Crypto import Random
+from Block import Block
+import BlockChain
+import hashlib
+import Crypto
 import socket
 import struct
-import Crypto
-from Crypto.PublicKey import RSA
-from Crypto.Cipher import PKCS1_OAEP
-from Crypto.Signature import PKCS1_v1_5
-from Crypto.Hash import SHA512, SHA384, SHA256, SHA, MD5
-from Crypto import Random
-from Crypto.Util import number
-from Transaction import Transaction
-import json
-import BlockChain
-from BlockChain import local_blockchain
-from Block import Block
-import hashlib
-import time
 import base64
+import json
+import time
 
-from ServerListener import ServerThreadListener
 
 hash = "SHA-256"
 public_key = 0
 private_key = 0
-buffer=""
+buffer = " "
 ###############################################################################
 #                    FUNZIONI CRITTOGRAFICHE DI UTILITÀ
 ##############################################################################
@@ -90,28 +90,37 @@ def verify(message, signature, pub_key,hash="SHA-256"):
     digest.update(message)
     return signer.verify(digest, signature)
 
+
 ###############################################################################
 #                          FUNZIONI PER L'UTENTE
 ##############################################################################
 
 def register():
     print("The registration is completed!\n")
+
     public, private = newkeys(2048)
+
     print("Your public key is:\n")
     print(str(public.n) + "_" + str(public.e) + "\n")
+
     print("Your private key is:\n")
     key = [str(private.n), str(private.e), str(private.d)]
     print(str(private.n) + " " + str(private.e) + " " + str(private.d) + "\n")
+
     print("Save your private key or you will not be able to access your wallet again!\n")
+
     return public, private
 
 
 def login(key):
     k = key.split()
+
     for i in range(len(k)):
         k[i] = int(k[i])
+
     check_key = RSA.construct(k, consistency_check=True)
     print(check_key.n)
+
     return check_key.publickey(), check_key
 
 
@@ -119,25 +128,23 @@ def send_money(private_key: Crypto.PublicKey.RSA.RsaKey, sender):
 
     print("Insert the public key or the receiver:")
     receiver = input()
-
+    # TODO: check input consistency
     print("Insert the amount of money you want to send:")
     amount = input()
+    # TODO: check input consistency
 
-    # TODO check input data
     print("Transazione di: " + amount + " DSSCoin verso: " + receiver + "\n")
 
     tmp = receiver.split("_")
     n = int(tmp[0])
     e = int(tmp[1])
 
-    #check sender != receiver
-
+    #check sif ender != receiver
     if sender.n == n and sender.e == e:
         print("Sender is uqual to Receiver")
         return
 
-    #check amount of money
-
+    #check the amount of money
     if local_blockchain.count_money(sender)<int(amount):
         print("Not enough money")
         return
@@ -153,17 +160,18 @@ def send_money(private_key: Crypto.PublicKey.RSA.RsaKey, sender):
         "receiver_e": receiver_public_key.e,
         "timestamp": time.time()
     }
-    #message_to_send = json.dumps(packet)
+
     sign_of_transaction = sign(packet.__str__().encode(), private_key, "SHA-256")
+
     new_transaction = Transaction(sender, amount, receiver_public_key,f"{sign_of_transaction}", packet["timestamp"])
-    #packet["sign"]=sign_of_transaction
-    #packet["sign"]=number.bytes_to_long(sign_of_transaction)
+
     packet["sign"]=f"{sign_of_transaction}"
+
     print("chiave generata")
     print(sign_of_transaction)
+
     message_to_send = json.dumps(packet)
-    #print("Messaggio user (sign_of_transaction):")
-    #print(sign_of_transaction)
+
 
     # creazione del socket per trasmettere, invio della transazione in formato JSON, firma appesa in seguito
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -171,7 +179,6 @@ def send_money(private_key: Crypto.PublicKey.RSA.RsaKey, sender):
     # divisore per fare la split lato ricevente
     #print("DEBUG_LOG: chiamata a send_to() dentro a send_money()")
     sock.sendto((message_to_send + "divisore").encode() + sign_of_transaction, ("224.0.0.0", 2000))
-
 
 
 def exists_blockchain():
@@ -212,11 +219,12 @@ def exists_blockchain():
         return True
 
 
-
 def update_blockchain():
+    global public_key
+
     server_listener = ServerThreadListener()
     server_listener.start()
-    global public_key
+
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
 
@@ -241,7 +249,7 @@ def update_blockchain():
     # dimensione del buffer
     #update = sock1.recv(10240).decode()
     ##time.sleep(1)
-    update=buffer
+    update = buffer
     #print(update)
     if update == "index_error":
         print("Wrong index")
@@ -267,6 +275,7 @@ def update_blockchain():
             i_previous_hash=i_dict['previous_hash']
             i_timestamp=i_dict['timestamp']
             transactions=[]
+
             for j in i_transactions:
                 tmp=i_transactions[j]
                 tmp_sender=tmp['sender']
@@ -276,7 +285,8 @@ def update_blockchain():
                 tmp_sign=tmp['sign']
                 new_transaction=Transaction(tmp_sender,tmp_amount,tmp_receiver,eval(tmp_sign),tmp_timestamp)
                 transactions.append(new_transaction)
-            new_block=Block(i_index,transactions,i_nonce,i_previous_hash,i_timestamp)
+
+            new_block = Block(i_index,transactions,i_nonce,i_previous_hash,i_timestamp)
             local_blockchain.add_block(new_block)
 
 
