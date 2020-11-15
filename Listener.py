@@ -42,13 +42,13 @@ class ThreadListener(Thread):
         # count transactions
         number_of_transactions = 0
 
-        def exists(self):
+        def exists():
             if not local_blockchain.get_chain():
                 sock1.sendto("False".encode(), ("224.0.0.0", 2001))
             if local_blockchain.get_chain():
                 sock1.sendto("True".encode(), ("224.0.0.0", 2001))
 
-        def send_json(self, ini, index):
+        def send_json(ini, index):
             packets = []
             for i in range(0, index + 1):
                 new_block = local_blockchain.get_chain()[i]
@@ -88,7 +88,7 @@ class ThreadListener(Thread):
             sock1.sendto(json_packet.encode(), ("224.0.0.0", 2001))
             # fine for su i
 
-        def update(self):
+        def update():
             tmp = recv.decode().split(" ")
             last_block = tmp[1]
             received_public_key = tmp[2]
@@ -98,7 +98,7 @@ class ThreadListener(Thread):
             # CASO IN CUI IL MITTENTE NON HA NIENTE
             if last_block == "empty":
                 index = BlockChain.local_blockchain.last_block().index
-                send_json(self, 0, index)
+                send_json(0, index)
 
             # CASO IN CUI NON C'È BISOGNO DI AGGIORNARE
             elif int(last_block) == BlockChain.local_blockchain.last_block().index:
@@ -109,14 +109,14 @@ class ThreadListener(Thread):
             # CASO IN CUI C'È UN AGGIORNAMENTO PARZIALE
             elif int(last_block) < BlockChain.local_blockchain.last_block().index:
                 index = BlockChain.local_blockchain.last_block().index
-                send_json(self, int(last_block), index)
+                send_json(int(last_block), index)
 
             # CASO DI INDICE NON VALIDO
             elif int(last_block) > BlockChain.local_blockchain.last_block().index:
                 # print("Index not valid")
                 sock1.sendto("index_error".encode(), ("224.0.0.0", 2001))
 
-        def handle_transaction(self, number_of_transactions):
+        def handle_transaction(number_of_transactions):
             message_arrived = recv.split(b'divisore')
             sign = message_arrived[1]
 
@@ -201,13 +201,13 @@ class ThreadListener(Thread):
 
             # Richiesta di esistenza della blockchain
             if msg == "exists":
-                exists(self)
+                exists()
 
             # Richiesta di aggiornamento della blockchain
             elif msg[:6] == "update":
-                update(self)
+                update()
             # Ricezione di una transazione
             else:
-                number_of_transactions = handle_transaction(self, number_of_transactions)
+                number_of_transactions = handle_transaction(number_of_transactions)
 
     # TODO Mining
