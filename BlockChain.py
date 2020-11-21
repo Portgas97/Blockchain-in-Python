@@ -143,6 +143,7 @@ class Blockchain:
         string_to_hash += str(current_block.timestamp)
         result_hash = hashlib.sha256(string_to_hash.encode()).hexdigest()
         if current_block.block_hash != result_hash:
+
             print("cavallo")
             return False
         # da aggiungere if non valido PoW
