@@ -153,7 +153,7 @@ class ThreadListener(Thread):
             if number_of_transactions == TRANSACTION_IN_BLOCK:
                 number_of_transactions = 0
                 block_mined = local_blockchain.mine(User.public_key, local_blockchain.pending_transactions())
-                print("Bloc_mined")
+                print("Block_mined")
                 print(block_mined)
                 new_packet = ""
                 if block_mined is not None:
@@ -180,8 +180,9 @@ class ThreadListener(Thread):
                         "timestamp": block_mined.timestamp,
 
                     }
-                json_block = json.dumps(new_packet)
-                sock1.sendto(json_block.encode(), ("224.0.0.0", 2002))
+                    json_block = json.dumps(new_packet)
+                    print("paccheto inviato"+json_block)
+                    sock1.sendto(json_block.encode(), ("224.0.0.0", 2002))
             return number_of_transactions
 
         while True:

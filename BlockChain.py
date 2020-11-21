@@ -126,9 +126,13 @@ class Blockchain:
             return True
 
         elif current_block.index != previous_block.index + 1:
+            print(current_block.index)
+            print(previous_block.index)
+            print("cane")
             return False
 
         if current_block.previous_hash != previous_block.block_hash:
+            print("gatto")
             return False
 
         string_to_hash = ""
@@ -139,6 +143,7 @@ class Blockchain:
         string_to_hash += str(current_block.timestamp)
         result_hash = hashlib.sha256(string_to_hash.encode()).hexdigest()
         if current_block.block_hash != result_hash:
+            print("cavallo")
             return False
         # da aggiungere if non valido PoW
         return True

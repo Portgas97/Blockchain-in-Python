@@ -56,7 +56,7 @@ class ServerThreadListener(Thread):
         sock1.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq1)
 
         # print("DEBUG_LOG: Listener torna ad eseguire while true, ascolto...")
-        buffer = sock1.recv(10240).decode()
+        buffer = sock1.recv(2**16).decode()
         # print("RICEVUTO:"+ buffer)
         set_buffer(buffer)
         # print(User.buffer)
@@ -89,8 +89,8 @@ class BlockListener(Thread):
             buffer = sock1.recv(10240).decode()
             block_received=json.loads(buffer)
             print("BLOCK LISTENER")
-            print(buffer)
-            if buffer=="":
+            print("block listener: " + buffer)
+            if buffer == "":
                 print("il buffer è vuoto")
                 continue
             i_index = block_received['index']
@@ -126,7 +126,7 @@ class BlockListener(Thread):
                 print("Il blocco non esiste")
                 if validate_proof_of_work(new_block):
                     local_blockchain.add_block(new_block)
-                    #return
+                    continue
 
             if block_interested is not None and new_block.timestamp < block_interested.timestamp:
                 local_blockchain.remove_tail(new_block.index)
