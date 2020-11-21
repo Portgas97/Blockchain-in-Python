@@ -170,7 +170,7 @@ def send_money(private_key: Crypto.PublicKey.RSA.RsaKey, sender):
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
     # divisore per fare la split lato ricevente
     #print("DEBUG_LOG: chiamata a send_to() dentro a send_money()")
-    sock.sendto((message_to_send + "divisore").encode() + sign_of_transaction, ("224.0.0.0", 2000))
+    sock.sendto((message_to_send).encode(), ("224.0.0.0", 2000))
 
 
 
