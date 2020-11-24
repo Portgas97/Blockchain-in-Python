@@ -1,28 +1,26 @@
-from BlockChain import local_blockchain
-from Crypto.PublicKey import RSA
 from threading import Thread
-import BlockChain
-import hashlib
-import base64
+
 import socket
 import struct
-import Block
-import time
+from Crypto.PublicKey import RSA
 import User
 import json
+import BlockChain
+from BlockChain import local_blockchain
 
-TRANSACTIONS_IN_BLOCK = 2
+# numero di transazioni da raccogliere prima di provare a minare un blocco 
+TRANSACTION_IN_BLOCK = 2
+
 
 class ThreadListener(Thread):
 
-    # define the activities of a thread such as respond to requests or transactions
+    # metodo che rappresenta le attività compiute dal thread
     def run(self):
-
         # creazione del socket, utilizza IPv4, di tipo UDP
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 
-        # SO_REUSEADDR è u flag che dice al kernel di riusare un socket locale nello stato 'TIME_WAIT', senza aspettare per il timeout
-        # level = SOL_SOCKET implica che manipoliamo a livello di API
+        # SO_REUSEADDR è un flag che dice al kernel di riusare un socket locale nello stato 'TIME_WAIT',
+        # senza aspettare per il timeout level = SOL_SOCKET implica che manipoliamo a livello di API
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
         sock1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -39,8 +37,8 @@ class ThreadListener(Thread):
         # aggiungiamo al multicast group
         sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
-        # count transactions
-        number_of_transactions = 0
+        # per contare le transazioni pendenti
+        transaction_count = 0
 
 
         def exists():
@@ -50,16 +48,15 @@ class ThreadListener(Thread):
                 sock1.sendto("True".encode(), ("224.0.0.0", 2001))
 
 
+        # funzione di utilità per inviare una serie di blocchi in formato json
         def send_json(ini, index):
             packets = []
-
             for i in range(0, index + 1):
                 new_block = local_blockchain.get_chain()[i]
                 # print("DEGUG_LOG"+ str(new_block.index))
                 transactions = new_block.transactions
                 # print(transactions)
                 dict_tra = []
-
                 for j in range(0, len(transactions)):
                     new_dict = {
                         "sender": transactions[j].sender,
@@ -69,7 +66,7 @@ class ThreadListener(Thread):
                         "sign": f"{transactions[j].sign}"
                     }
                     dict_tra.append(new_dict)
-                    # fine for su j
+
                 # print(dict_tra)
                 dict_transactions = {k: dict_tra[k] for k in range(0, len(transactions))}
 
@@ -80,28 +77,26 @@ class ThreadListener(Thread):
                     "previous_hash": new_block.previous_hash,
                     "timestamp": new_block.timestamp
                 }
+
                 packets.append(new_packet)
-                # fine for su i
-
             if ini == 0:
-                dict = {i: packets[i] for i in range(0, index + 1)}
+                dictionary = {i: packets[i] for i in range(0, index + 1)}
             else:
-                dict = {i: packets[i] for i in range(ini + 1, index + 1)}
+                dictionary = {i: packets[i] for i in range(ini + 1, index + 1)}
 
-            json_packet = json.dumps(dict)
+            json_packet = json.dumps(dictionary)
             sock1.sendto(json_packet.encode(), ("224.0.0.0", 2001))
+            # fine for su i
 
 
+        # risposta alle richieste sullo stato corrente della Blockchain
         def update():
-            tmp = recv.decode().split(" ")
-
+            tmp = receive.decode().split(" ")
             last_block = tmp[1]
             received_public_key = tmp[2]
-
             if received_public_key == str(User.public_key.n) + "_" + str(User.public_key.e):
                 print("non rispondo a me stesso")
                 return
-
             # CASO IN CUI IL MITTENTE NON HA NIENTE
             if last_block == "empty":
                 index = BlockChain.local_blockchain.last_block().index
@@ -124,11 +119,13 @@ class ThreadListener(Thread):
                 sock1.sendto("index_error".encode(), ("224.0.0.0", 2001))
 
 
+        # se ricevo una transazione la aggiungo alla mia blockchain
+        # quando arrivo a TRANSACTION_IN_BLOCK transazioni raccolte
+        # mino un blocco
         def handle_transaction(number_of_transactions):
-            message_arrived = recv.split(b'divisore')
+            message_arrived = receive
 
-            sign = message_arrived[1]
-            message = json.loads(message_arrived[0].decode())
+            message = json.loads(message_arrived.decode())
 
             # ricavo i sottocampi
             message_sender_n = message["sender_n"]
@@ -138,12 +135,9 @@ class ThreadListener(Thread):
             message_reveicer_e = message["receiver_e"]
             message_timestamp = message["timestamp"]
             message_sign = eval(message["sign"])
-
             print(message_sign)
             print(type(message_sign))
-
-            message.pop("sign") # Toglie dal dizionario la firma e poi controlla che sia tutto ok
-
+            message.pop("sign")  # Toglie dal dizionario la firma e poi controlla che sia tutto ok
             key_received = str(message_sender_n) + "_" + str(message_sender_e)
             local_private_key = str(User.public_key.n) + "_" + str(User.public_key.e)
 
@@ -155,7 +149,7 @@ class ThreadListener(Thread):
                 # print("DEBUG_LOG: il thread listener ha ricevuto una transazione creata in locale")
                 return number_of_transactions
 
-            sender_key = RSA.construct([message_sender_n, message_sender_e])
+            sender_key = RSA.construct((message_sender_n, message_sender_e))
             is_valid = User.verify(message.__str__().encode(), message_sign, sender_key)
             print("Transaction is valid:" + str(is_valid))
 
@@ -165,21 +159,20 @@ class ThreadListener(Thread):
                                                 message_timestamp)  # message sign already evaluated
 
             # Se ho raccolto un numero sufficiente di transazioni comincio a minare il blocco
-            if number_of_transactions == TRANSACTIONS_IN_BLOCK:
-                number_of_transactions = 0
+            if number_of_transactions == TRANSACTION_IN_BLOCK:
 
+                number_of_transactions = 0 # ripulisco
                 block_mined = local_blockchain.mine(User.public_key, local_blockchain.pending_transactions())
-                print("Block mined successfully")
+
+                print("Block_mined: ")
                 print(block_mined)
 
                 new_packet = ""
-
                 if block_mined is not None:
                     print("Debug-I'm sending the block just mined!")
                     transactions = block_mined.transactions
                     # print(transactions)
                     dict_tra = []
-
                     for j in range(0, len(transactions)):
                         new_dict = {
                             "sender": transactions[j].sender,
@@ -188,10 +181,9 @@ class ThreadListener(Thread):
                             "timestamp": transactions[j].timestamp,
                             "sign": f"{transactions[j].sign}"
                         }
+
                         dict_tra.append(new_dict)
-
                     dict_transactions = {k: dict_tra[k] for k in range(0, len(transactions))}
-
                     new_packet = {
                         "index": block_mined.index,
                         "transactions": dict_transactions,
@@ -200,28 +192,33 @@ class ThreadListener(Thread):
                         "timestamp": block_mined.timestamp,
 
                     }
+                    json_block = json.dumps(new_packet)
 
-                json_block = json.dumps(new_packet)
-                sock1.sendto(json_block.encode(), ("224.0.0.0", 2002))
-
+                    # print("paccheto inviato"+json_block)
+                    sock1.sendto(json_block.encode(), ("224.0.0.0", 2002))
             return number_of_transactions
 
-
+        # # # # # # # # # # # # corpo della funzione run # # # # # # # # # # #
         while True:
-            print("DEBUG_LOG: Listener torna ad eseguire while true, ascolto...")
-            recv = sock.recv(10240)  # non si usa recvfrom per multicasting
+            print("DEBUG_LOG: Listener torna ad ascoltare...")
+            receive = sock.recv(10240)  # non si usa recvfrom per multicasting
 
             msg = " "
             try:
-                msg = recv.decode()
-            except:
+                msg = receive.decode()
+            except Exception:
                 print(msg)
 
-            if msg == "exists": # Richiesta di esistenza della blockchain
+            # Richiesta di esistenza della blockchain
+            if msg == "exists":
                 exists()
 
-            elif msg[:6] == "update": # Richiesta di aggiornamento della blockchain
+            # Richiesta di aggiornamento della blockchain
+            elif msg[:6] == "update":
                 update()
 
-            else: # Ricezione di una transazione
-                number_of_transactions = handle_transaction(number_of_transactions)
+            # Ricezione di una transazione
+            else:
+                transaction_count = handle_transaction(transaction_count)
+
+    # TODO Mining
