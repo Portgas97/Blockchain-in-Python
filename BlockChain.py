@@ -206,6 +206,67 @@ class Blockchain:
         for block in new_blocks:
             self.add_block(block)
 
+    def print(self):
+        for i in self.__chain:
+            print("###################################################################################################")
+            print("# Blocco di indice: "+ str(i.index)+ "                                                                             #")
+            for j in i.transactions:
+                print("#      ------------------------------------"+ "                                                       #")
+                if int(j.sender)==0:
+                    print("#      Sender: " + str(j.sender)+ "                                                                                  #")
+                    print("#      Amount: " + str(j.amount)+ "                                                                                 #")
+                    print("#      Receiver: " + str(j.receiver)[:64] + "..."+ "              #")
+                    print("#      Timestamp: " + str(j.timestamp)+ "                                                              #")
+                    print("#      Sign: " + str(j.sign)+ "                                                                            #")
+                else:
+                    print("#      Sender: "   + str(j.sender)[:64]+"..."+ "              #")
+                    print("#      Amount: "   + str(j.amount)+ "                                                         #")
+                    print("#      Receiver: " + str(j.receiver)[:64]+"..."+ "         #")
+                    print("#      Timestamp: "+str(j.timestamp)+ "                                                              #")
+                    print("#      Sign: "     +str(j.sign)[:20]+"..."+ "                                                         #")
+            print("#      ------------------------------------"+ "                                                       #")
+            print("# Nonce del blocco: "+str(i.nonce)+"  "+ "                                                                         #")
+            if i == local_blockchain.__chain[0]:
+                print("# Previous hash del blocco: " + str(i.previous_hash)+" #")
+            else:
+                print("# Previous hash del blocco: "+ str(i.previous_hash)[:64]+"..."+ "      #")
+            print("# Timestamp del blocco: " +str(i.timestamp)+"                                                        #")
+            print("###################################################################################################")
+            if i != local_blockchain.last_block():
+                print("           |           ")
+                print("           |           ")
+                print("           |           ")
+                print("           |           ")
+                print("           V           ")
+            else:
+                print("Ended Blockchain")
+
+
+    def print_user_transactions(self,public):
+        public_key=str(public.n)+"_"+str(public.e)
+        index=1
+        current_moneys=0
+        for i in self.__chain:
+            for j in i.transactions:
+                if j.sender==public_key:
+                    print("Transaction no. " + str(index)+".")
+                    print(" Sender: myself")
+                    print(" Amount: " + str(j.amount))
+                    print(" Receiver: " + j.receiver[:20]+"...")
+                    current_moneys -= int(j.amount)
+                    index = index+1
+
+                if j.receiver==public_key:
+                    print("Transaction no. " + str(index)+".")
+                    if(j.sender!=str(0)):
+                        print(" Sender: "+ j.sender[:20]+ "...")
+                    else:
+                        print(" Sender: "+ j.sender)
+                    print(" Amount: " + str(j.amount))
+                    print(" Receiver: myself")
+                    current_moneys += int(j.amount)
+                    index = index+1
+        print("Current money: " + str(current_moneys))
 
 # # # # # # # # # # # # # Creazione della Blockchain # # # # # # # # # # # # #
 

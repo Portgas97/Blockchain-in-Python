@@ -85,6 +85,10 @@ class BlockListener(Thread):
         sock1.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq1)
 
         # print("DEBUG_LOG: Listener torna ad eseguire while true, ascolto...")
+
+        #dual block contiene il blocco con che ha colliso con un altro blocco della blockchain. Si mantiene il blocco per scongiurare un attacco da Eve.
+        dual_block = None
+
         while True:
             buffer = sock1.recv(10240).decode()
             block_received=json.loads(buffer)
@@ -116,6 +120,13 @@ class BlockListener(Thread):
 
             new_block = Block(i_index, transactions, i_nonce, i_previous_hash, i_timestamp)
 
+            if dual_block is not None:
+                if dual_block.block_hash == new_block.previous_hash:
+                    local_blockchain.remove_tail(new_block.index-1)
+                    local_blockchain.add_block(dual_block)
+                    dual_block = None
+
+
             print("validate proof of work: " + str(validate_proof_of_work(new_block)))
 
             block_interested = None
@@ -123,7 +134,7 @@ class BlockListener(Thread):
             try:
                 block_interested=local_blockchain.get_chain()[new_block.index]
             except:
-                print("Il blocco non esiste")
+                print("Il blocco non esiste, lo vado ad aggiungere alla blockchain")
                 if validate_proof_of_work(new_block):
                     local_blockchain.add_block(new_block)
                     continue
@@ -131,4 +142,11 @@ class BlockListener(Thread):
             if block_interested is not None and new_block.timestamp < block_interested.timestamp:
                 local_blockchain.remove_tail(new_block.index)
                 print("DEBUG BLOCK LISTENER")
-                print(local_blockchain.add_block(new_block))
+                result_add=local_blockchain.add_block(new_block)
+                dual_block=block_interested
+                continue
+            dual_block=new_block
+
+
+
+

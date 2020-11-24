@@ -97,13 +97,18 @@ while True:
 
     elif op == 2:
         print("Actual Blockchain:")
+        local_blockchain.print()
 
     elif op == 3:
         print("Transaction History:")
+        local_blockchain.print_user_transactions(public)
     elif op == 4:
         User.update_blockchain()
 
-
+#sistemare login
+#fare la stampa
+#fare la lista delle transazioni
+#blocco eve -- fatto
 
 #time.sleep(10)
 print("sleep in User.py terminata")
