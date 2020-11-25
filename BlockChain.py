@@ -207,37 +207,65 @@ class Blockchain:
             self.add_block(block)
 
     def print(self):
+        max_len=len("# Previous hash del blocco: " + str(self.initial_hash)+"  ")
         for i in self.__chain:
-            print("###################################################################################################")
-            print("# Blocco di indice: "+ str(i.index)+ "                                                                             #")
-            for j in i.transactions:
-                print("#      ------------------------------------"+ "                                                       #")
-                if int(j.sender)==0:
-                    print("#      Sender: " + str(j.sender)+ "                                                                                  #")
-                    print("#      Amount: " + str(j.amount)+ "                                                                                 #")
-                    print("#      Receiver: " + str(j.receiver)[:64] + "..."+ "              #")
-                    print("#      Timestamp: " + str(j.timestamp)+ "                                                              #")
-                    print("#      Sign: " + str(j.sign)+ "                                                                            #")
-                else:
-                    print("#      Sender: "   + str(j.sender)[:64]+"..."+ "              #")
-                    print("#      Amount: "   + str(j.amount)+ "                                                         #")
-                    print("#      Receiver: " + str(j.receiver)[:64]+"..."+ "         #")
-                    print("#      Timestamp: "+str(j.timestamp)+ "                                                              #")
-                    print("#      Sign: "     +str(j.sign)[:20]+"..."+ "                                                         #")
-            print("#      ------------------------------------"+ "                                                       #")
-            print("# Nonce del blocco: "+str(i.nonce)+"  "+ "                                                                         #")
+            info_to_be_printed=[]
+            info_to_be_printed.append("# Blocco di indice: " + str(i.index))
+            info_to_be_printed.append("# Nonce del blocco: "+str(i.nonce))
             if i == local_blockchain.__chain[0]:
-                print("# Previous hash del blocco: " + str(i.previous_hash)+" #")
+                info_to_be_printed.append("# Previous hash del blocco: " + str(i.previous_hash))
             else:
-                print("# Previous hash del blocco: "+ str(i.previous_hash)[:64]+"..."+ "      #")
-            print("# Timestamp del blocco: " +str(i.timestamp)+"                                                        #")
-            print("###################################################################################################")
+                info_to_be_printed.append("# Previous hash del blocco: " + str(i.previous_hash)[:64]+"...")
+
+            info_to_be_printed.append("# Timestamp del blocco: " +str(i.timestamp))
+
+            #stampa cancelletti
+            print(max_len*"#")
+            #stampa blocco indice
+            print(info_to_be_printed[0]+(max_len-len(info_to_be_printed[0])-1)*" "+"#")
+            for j in i.transactions:
+                print("#      "+"-"*(max_len-9)+" #")
+                transactions_to_be_printed = []
+                if int(j.sender)==0:
+                    transactions_to_be_printed.append("#      Sender: " + str(j.sender))
+                else:
+                    transactions_to_be_printed.append("#      Sender: " + str(j.sender)[:64]+"...")
+                transactions_to_be_printed.append("#      Amount: " + str(j.amount))
+                transactions_to_be_printed.append("#      Receiver: " + str(j.receiver)[:64] + "...")
+                transactions_to_be_printed.append("#      Timestamp: " + str(j.timestamp))
+                if int(j.sender)==0:
+                    transactions_to_be_printed.append("#      Sign: " + str(j.sign))
+                else:
+                    transactions_to_be_printed.append("#      Sign: "     +str(j.sign)[:20]+"...")
+
+                # sender
+                print(transactions_to_be_printed[0]+(max_len-len(transactions_to_be_printed[0])-1)*" "+"#")
+                #amount
+                print(transactions_to_be_printed[1]+(max_len-len(transactions_to_be_printed[1])-1)*" "+"#")
+                #receiver
+                print(transactions_to_be_printed[2]+(max_len-len(transactions_to_be_printed[2])-1)*" "+"#")
+                #timestamp
+                print(transactions_to_be_printed[3]+(max_len-len(transactions_to_be_printed[3])-1)*" "+"#")
+                #sign
+                print(transactions_to_be_printed[4]+(max_len-len(transactions_to_be_printed[4])-1)*" "+"#")
+
+            print("#      " + "-" * (max_len - 9) + " #")
+            # stampa nonce blocco
+            print(info_to_be_printed[1]+(max_len-len(info_to_be_printed[1])-1)*" "+"#")
+            # stampa previous hash
+            print(info_to_be_printed[2]+(max_len-len(info_to_be_printed[2])-1)*" "+"#")
+            # stampa hash
+            print(info_to_be_printed[3]+(max_len-len(info_to_be_printed[3])-1)*" "+"#")
+            # stampa cancelletti
+            print(max_len * "#")
             if i != local_blockchain.last_block():
-                print("           |           ")
-                print("           |           ")
-                print("           |           ")
-                print("           |           ")
-                print("           V           ")
+                print(int(max_len/2)*" "+"|")
+                print(int(max_len/2)*" "+"|")
+                print(int(max_len/2)*" "+"|")
+                print(int(max_len/2)*" "+"|")
+                print(int(max_len/2)*" "+"|")
+                print(int(max_len/2-1)*" "+"\\"+"|"+"/")
+                print(int(max_len/2)*" "+"V")
             else:
                 print("Ended Blockchain")
 
