@@ -4,8 +4,7 @@ from ServerListener import BlockListener
 from BlockChain import local_blockchain, Blockchain
 import os
 import signal
-import sys
-import time
+
 
 
 # add_block(["Satoshi sent 1 BTC to Ivan", "Maria sent 5 MTC to Jenny", "Satoshi sent 5 BTC to Hal Finney"])
@@ -103,17 +102,16 @@ while True:
         print("Transaction History:")
         local_blockchain.print_user_transactions(public)
     elif op == 4:
-        User.update_blockchain()
+        os.kill(os.getpid(), signal.SIGTERM)
+        print("####### FINE DEMO #######")
+
 
 #sistemare login
 #fare la stampa
 #fare la lista delle transazioni
 #blocco eve -- fatto
 
-#time.sleep(10)
-print("sleep in User.py terminata")
 
-print("####### FINE DEMO #######")
 
 # c = User.crypt("ciao".encode(), public)
 # print(c)
