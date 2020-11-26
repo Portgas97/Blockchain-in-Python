@@ -1,6 +1,5 @@
 import hashlib
 from time import time
-
 from Block import Block
 from Transaction import Transaction
 from Crypto.PublicKey import RSA
@@ -174,38 +173,7 @@ class Blockchain:
         # print("DEBUG_COUNT MONEY"+str(amount))
         return amount
 
-################################## DA VEDERE SE SERVE #####################################
-    def validate_chain(self, chain_to_validate):
-
-        # Validate genesis blocks
-        sha1 = hashlib.sha256("".join(self.__chain[0].transactions).encode()).hexdigest()
-        sha2 = hashlib.sha256("".join(chain_to_validate[0].transactions).encode()).hexdigest()
-        if sha1 != sha2:
-            return False
-
-        # Then we compare each block with its previous one
-        for x in range(1, len(chain_to_validate)):
-            if not self.validate_block(chain_to_validate[x], chain_to_validate[x - 1]):
-                return False
-
-        return True
-
-################################## DA VEDERE SE SERVE #####################################
-    def replace_chain(self, new_chain):
-
-        # We replace only if the new chain is bigger than the current one
-        if len(new_chain) <= len(self.__chain):
-            return False
-
-        # Validate the new chain
-        if not self.validate_chain(new_chain):
-            return False
-
-        # Add blocks
-        new_blocks = new_chain[len(self.__chain):]
-        for block in new_blocks:
-            self.add_block(block)
-
+    # stampa una rappresentazione della blockchain corrente
     def print(self):
         max_len=len("# Previous hash del blocco: " + str(self.initial_hash)+"  ")
         for i in self.__chain:
@@ -269,7 +237,7 @@ class Blockchain:
             else:
                 print("Ended Blockchain")
 
-
+    # stampa la storia delle transazioni dell'utente
     def print_user_transactions(self,public):
         public_key=str(public.n)+"_"+str(public.e)
         index=1
@@ -295,6 +263,39 @@ class Blockchain:
                     current_moneys += int(j.amount)
                     index = index+1
         print("Current money: " + str(current_moneys))
+
+
+################################## DA VEDERE SE SERVE #####################################
+    def validate_chain(self, chain_to_validate):
+
+        # Validate genesis blocks
+        sha1 = hashlib.sha256("".join(self.__chain[0].transactions).encode()).hexdigest()
+        sha2 = hashlib.sha256("".join(chain_to_validate[0].transactions).encode()).hexdigest()
+        if sha1 != sha2:
+            return False
+
+        # Then we compare each block with its previous one
+        for x in range(1, len(chain_to_validate)):
+            if not self.validate_block(chain_to_validate[x], chain_to_validate[x - 1]):
+                return False
+
+        return True
+
+################################## DA VEDERE SE SERVE #####################################
+    def replace_chain(self, new_chain):
+
+        # We replace only if the new chain is bigger than the current one
+        if len(new_chain) <= len(self.__chain):
+            return False
+
+        # Validate the new chain
+        if not self.validate_chain(new_chain):
+            return False
+
+        # Add blocks
+        new_blocks = new_chain[len(self.__chain):]
+        for block in new_blocks:
+            self.add_block(block)
 
 # # # # # # # # # # # # # Creazione della Blockchain # # # # # # # # # # # # #
 

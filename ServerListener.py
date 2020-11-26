@@ -1,6 +1,5 @@
 import time
 from threading import Thread, RLock
-
 import socket
 import struct
 from Crypto.PublicKey import RSA
@@ -11,12 +10,14 @@ from Block import Block
 from BlockChain import local_blockchain
 import hashlib
 from Transaction import Transaction
-# mutex = RLock()
+
 
 def set_buffer(tmp: str):
     User.buffer = tmp
 
+# verifica che la PoW sia corretta calcolando l'hash
 def validate_proof_of_work(block):
+
     str_to_hash=""
     for i in range(0, len(block.transactions)):
         str_to_hash+=block.transactions[i].sender + str(block.transactions[i].amount) + \
@@ -32,7 +33,7 @@ def validate_proof_of_work(block):
     else:
         return False
 
-
+# DA AGGIUNGERE DESCRIZIONE DEL THREAD
 class ServerThreadListener(Thread):
 
     # metodo che rappresenta le attività compiute dal thread
@@ -61,7 +62,7 @@ class ServerThreadListener(Thread):
         set_buffer(buffer)
         # print(User.buffer)
 
-
+# DA AGGIUNGERE DESCRIZIONE DEL THREAD
 class BlockListener(Thread):
     # print("ciao")
 
@@ -90,18 +91,23 @@ class BlockListener(Thread):
         dual_block = None
 
         while True:
+
             buffer = sock1.recv(10240).decode()
+
             block_received=json.loads(buffer)
-            print("BLOCK LISTENER")
-            print("block listener: " + buffer)
-            if buffer == "":
+
+            # print("BLOCK LISTENER")
+            # print("block listener: " + buffer)
+            if buffer == " ":
                 print("il buffer è vuoto")
                 continue
+
             i_index = block_received['index']
             i_transactions = block_received['transactions']
             i_nonce = block_received['nonce']
             i_previous_hash = block_received['previous_hash']
             i_timestamp = block_received['timestamp']
+
             transactions = []
             for j in i_transactions:
                 tmp = i_transactions[j]
@@ -145,8 +151,5 @@ class BlockListener(Thread):
                 result_add=local_blockchain.add_block(new_block)
                 dual_block=block_interested
                 continue
-            dual_block=new_block
 
-
-
-
+            dual_block = new_block

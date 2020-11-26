@@ -1,5 +1,4 @@
 from threading import Thread
-
 import socket
 import struct
 from Crypto.PublicKey import RSA
@@ -8,10 +7,10 @@ import json
 import BlockChain
 from BlockChain import local_blockchain
 
-# numero di transazioni da raccogliere prima di provare a minare un blocco 
+# numero di transazioni da raccogliere prima di provare a minare un blocco
 TRANSACTION_IN_BLOCK = 2
 
-
+# AGGIUNGERE DESCRIZIONE THREAD LISTENER
 class ThreadListener(Thread):
 
     # metodo che rappresenta le attività compiute dal thread
@@ -40,10 +39,11 @@ class ThreadListener(Thread):
         # per contare le transazioni pendenti
         transaction_count = 0
 
-
+        # risponde a una richiesta di esistenza della blockchain
         def exists():
             if not local_blockchain.get_chain():
                 sock1.sendto("False".encode(), ("224.0.0.0", 2001))
+
             if local_blockchain.get_chain():
                 sock1.sendto("True".encode(), ("224.0.0.0", 2001))
 
@@ -220,5 +220,3 @@ class ThreadListener(Thread):
             # Ricezione di una transazione
             else:
                 transaction_count = handle_transaction(transaction_count)
-
-    # TODO Mining

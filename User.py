@@ -15,25 +15,28 @@ from Block import Block
 import hashlib
 import time
 import base64
-
 from ServerListener import ServerThreadListener
 
 hash = "SHA-256"
 public_key = 0
 private_key = 0
-buffer=""
+buffer = " "
+
 ###############################################################################
-#                    FUNZIONI CRITTOGRAFICHE DI UTILITÀ
-##############################################################################
+#                    FUNZIONI CRITTOGRAFICHE DI UTILITÀ                       #
+###############################################################################
 
 def newkeys(keysize):
     global public_key
     global private_key
+
     random_generator = Crypto.Random.get_random_bytes
     key = RSA.generate(keysize, random_generator)
     private, public = key, key.publickey()
+
     public_key = public
     private_key = private
+
     return public, private
 
 
@@ -89,6 +92,7 @@ def verify(message, signature, pub_key,hash="SHA-256"):
         digest = MD5.new()
     digest.update(message)
     return signer.verify(digest, signature)
+
 
 ###############################################################################
 #                          FUNZIONI PER L'UTENTE
@@ -190,23 +194,18 @@ def exists_blockchain():
 
     sock.sendto("exists".encode(), ("224.0.0.0", 2000))
 
-    # dopo 1 secondo se nessuno risponde ritorno False
-    #sock1.settimeout(1)
-    # dimensione del buffer
+
     try:
         server_listener.join(timeout=1)
-        ###time.sleep(1)
-        ##exists=get_buffer()
-        #exists = sock1.recv(10240)
-        #print("DEBUG Exists:"+ buffer)
+
     except:
         #print("DEBUG_LOG: terminazione exists_blockchain, valore di ritorno: False, causa: recv scaduta\n")
         return False
-    #if exists.decode() == "False":
+
     if buffer == "False":
         #print("DEBUG_LOG: terminazione exists_blockchain, valore di ritorno: False, causa: valore di ritorno == False\n")
         return False
-    #if exists.decode() == "True":
+
     if buffer == "True":
         #print("DEBUG_LOG: terminazione exists_blockchain, valore di ritorno: True, causa: valore di ritorno == True\n")
         return True
@@ -214,9 +213,10 @@ def exists_blockchain():
 
 
 def update_blockchain():
+    global public_key
+
     server_listener = ServerThreadListener()
     server_listener.start()
-    global public_key
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
 
@@ -231,26 +231,19 @@ def update_blockchain():
     except:
         print("timeout")
         return False
-    #sock1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-    #sock1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    #sock1.bind(('', 2001))
-    #mreq = struct.pack("=4sl", socket.inet_aton("224.0.0.0"), socket.INADDR_ANY)
-    #sock1.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
-    #sock1.settimeout(10)
-    # dimensione del buffer
-    #update = sock1.recv(10240).decode()
-    ##time.sleep(1)
     update=buffer
-    #print(update)
+
     if update == "index_error":
         print("Wrong index")
         return
+
     if update == "Already up to date":
         print(update)
         return
+
     else:
-        #print("DEBUG_JSON_ARRIVED "+update)
+        # print("DEBUG_JSON_ARRIVED "+update)
         try:
             dict = json.loads(update)
         except:
@@ -258,7 +251,7 @@ def update_blockchain():
             return update_blockchain()
 
         blocks=[]
-        #print("DEBUG_UPDATE"+"".join(dict))
+        # print("DEBUG_UPDATE"+"".join(dict))
         for i in dict:
             i_dict=dict[i]
             i_index=i_dict['index']
@@ -267,6 +260,7 @@ def update_blockchain():
             i_previous_hash=i_dict['previous_hash']
             i_timestamp=i_dict['timestamp']
             transactions=[]
+
             for j in i_transactions:
                 tmp=i_transactions[j]
                 tmp_sender=tmp['sender']
@@ -276,6 +270,7 @@ def update_blockchain():
                 tmp_sign=tmp['sign']
                 new_transaction=Transaction(tmp_sender,tmp_amount,tmp_receiver,eval(tmp_sign),tmp_timestamp)
                 transactions.append(new_transaction)
+                
             new_block=Block(i_index,transactions,i_nonce,i_previous_hash,i_timestamp)
             local_blockchain.add_block(new_block)
 
