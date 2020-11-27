@@ -35,7 +35,6 @@ class Blockchain:
             return True
         return False
 
-
     # # # # # # # # # # funzioni di utilità # # # # # # # # # #
 
     def last_block(self):
@@ -78,7 +77,8 @@ class Blockchain:
             previous_hash = last_block.block_hash
 
         # transazione di reward per il miner pari a 50 DSSCoin, non ha un mittente
-        self.create_transaction(sender="0", amount=50, receiver=str(reward_address.n) + "_" + str(reward_address.e), sign=b"reward")
+        self.create_transaction(sender="0", amount=50, receiver=str(reward_address.n) + "_" + str(reward_address.e),
+                                sign=b"reward")
 
         # definizione di mining
         # print("DEBUG_LOG: chiamata a generate_proof_of_work() dentro a mine()")
@@ -96,7 +96,7 @@ class Blockchain:
     # produce un hash con difficulty zero in testa
     def generate_proof_of_work(self, block_transactions):
 
-        number = 0 # variabile per l'output
+        number = 0  # variabile per l'output
         nonce = 0
 
         print("Tentativi: ")
@@ -175,127 +175,102 @@ class Blockchain:
 
     # stampa una rappresentazione della blockchain corrente
     def print(self):
-        max_len=len("# Previous hash del blocco: " + str(self.initial_hash)+"  ")
+        max_len = len("# Previous hash del blocco: " + str(self.initial_hash) + "  ")
         for i in self.__chain:
-            info_to_be_printed=[]
+            info_to_be_printed = []
             info_to_be_printed.append("# Blocco di indice: " + str(i.index))
-            info_to_be_printed.append("# Nonce del blocco: "+str(i.nonce))
+            info_to_be_printed.append("# Nonce del blocco: " + str(i.nonce))
             if i == local_blockchain.__chain[0]:
                 info_to_be_printed.append("# Previous hash del blocco: " + str(i.previous_hash))
             else:
-                info_to_be_printed.append("# Previous hash del blocco: " + str(i.previous_hash)[:64]+"...")
+                info_to_be_printed.append("# Previous hash del blocco: " + str(i.previous_hash)[:64] + "...")
 
-            info_to_be_printed.append("# Timestamp del blocco: " +str(i.timestamp))
+            info_to_be_printed.append("# Timestamp del blocco: " + str(i.timestamp))
 
-            #stampa cancelletti
-            print(max_len*"#")
-            #stampa blocco indice
-            print(info_to_be_printed[0]+(max_len-len(info_to_be_printed[0])-1)*" "+"#")
+            # stampa cancelletti
+            print(max_len * "#")
+            # stampa blocco indice
+            print(info_to_be_printed[0] + (max_len - len(info_to_be_printed[0]) - 1) * " " + "#")
             for j in i.transactions:
-                print("#      "+"-"*(max_len-9)+" #")
+                print("#      " + "-" * (max_len - 9) + " #")
                 transactions_to_be_printed = []
-                if int(j.sender)==0:
+                if int(j.sender) == 0:
                     transactions_to_be_printed.append("#      Sender: " + str(j.sender))
                 else:
-                    transactions_to_be_printed.append("#      Sender: " + str(j.sender)[:64]+"...")
+                    transactions_to_be_printed.append("#      Sender: " + str(j.sender)[:64] + "...")
                 transactions_to_be_printed.append("#      Amount: " + str(j.amount))
                 transactions_to_be_printed.append("#      Receiver: " + str(j.receiver)[:64] + "...")
                 transactions_to_be_printed.append("#      Timestamp: " + str(j.timestamp))
-                if int(j.sender)==0:
+                if int(j.sender) == 0:
                     transactions_to_be_printed.append("#      Sign: " + str(j.sign))
                 else:
-                    transactions_to_be_printed.append("#      Sign: "     +str(j.sign)[:20]+"...")
+                    transactions_to_be_printed.append("#      Sign: " + str(j.sign)[:20] + "...")
 
                 # sender
-                print(transactions_to_be_printed[0]+(max_len-len(transactions_to_be_printed[0])-1)*" "+"#")
-                #amount
-                print(transactions_to_be_printed[1]+(max_len-len(transactions_to_be_printed[1])-1)*" "+"#")
-                #receiver
-                print(transactions_to_be_printed[2]+(max_len-len(transactions_to_be_printed[2])-1)*" "+"#")
-                #timestamp
-                print(transactions_to_be_printed[3]+(max_len-len(transactions_to_be_printed[3])-1)*" "+"#")
-                #sign
-                print(transactions_to_be_printed[4]+(max_len-len(transactions_to_be_printed[4])-1)*" "+"#")
+                print(transactions_to_be_printed[0] + (max_len - len(transactions_to_be_printed[0]) - 1) * " " + "#")
+                # amount
+                print(transactions_to_be_printed[1] + (max_len - len(transactions_to_be_printed[1]) - 1) * " " + "#")
+                # receiver
+                print(transactions_to_be_printed[2] + (max_len - len(transactions_to_be_printed[2]) - 1) * " " + "#")
+                # timestamp
+                print(transactions_to_be_printed[3] + (max_len - len(transactions_to_be_printed[3]) - 1) * " " + "#")
+                # sign
+                print(transactions_to_be_printed[4] + (max_len - len(transactions_to_be_printed[4]) - 1) * " " + "#")
 
             print("#      " + "-" * (max_len - 9) + " #")
             # stampa nonce blocco
-            print(info_to_be_printed[1]+(max_len-len(info_to_be_printed[1])-1)*" "+"#")
+            print(info_to_be_printed[1] + (max_len - len(info_to_be_printed[1]) - 1) * " " + "#")
             # stampa previous hash
-            print(info_to_be_printed[2]+(max_len-len(info_to_be_printed[2])-1)*" "+"#")
+            print(info_to_be_printed[2] + (max_len - len(info_to_be_printed[2]) - 1) * " " + "#")
             # stampa hash
-            print(info_to_be_printed[3]+(max_len-len(info_to_be_printed[3])-1)*" "+"#")
+            print(info_to_be_printed[3] + (max_len - len(info_to_be_printed[3]) - 1) * " " + "#")
             # stampa cancelletti
             print(max_len * "#")
             if i != local_blockchain.last_block():
-                print(int(max_len/2)*" "+"|")
-                print(int(max_len/2)*" "+"|")
-                print(int(max_len/2)*" "+"|")
-                print(int(max_len/2)*" "+"|")
-                print(int(max_len/2)*" "+"|")
-                print(int(max_len/2-1)*" "+"\\"+"|"+"/")
-                print(int(max_len/2)*" "+"V")
+                print(int(max_len / 2) * " " + "|")
+                print(int(max_len / 2) * " " + "|")
+                print(int(max_len / 2) * " " + "|")
+                print(int(max_len / 2) * " " + "|")
+                print(int(max_len / 2) * " " + "|")
+                print(int(max_len / 2 - 1) * " " + "\\" + "|" + "/")
+                print(int(max_len / 2) * " " + "V")
             else:
                 print("Ended Blockchain")
 
     # stampa la storia delle transazioni dell'utente
-    def print_user_transactions(self,public):
-        public_key=str(public.n)+"_"+str(public.e)
-        index=1
-        current_moneys=0
+    def print_user_transactions(self, public):
+        public_key = str(public.n) + "_" + str(public.e)
+        index = 1
+        current_moneys = 0
         for i in self.__chain:
             for j in i.transactions:
-                if j.sender==public_key:
-                    print("Transaction no. " + str(index)+".")
+                if j.sender == public_key:
+                    print("Transaction no. " + str(index) + ".")
                     print(" Sender: myself")
                     print(" Amount: " + str(j.amount))
-                    print(" Receiver: " + j.receiver[:20]+"...")
+                    print(" Receiver: " + j.receiver[:20] + "...")
                     current_moneys -= int(j.amount)
-                    index = index+1
+                    index = index + 1
 
-                if j.receiver==public_key:
-                    print("Transaction no. " + str(index)+".")
-                    if(j.sender!=str(0)):
-                        print(" Sender: "+ j.sender[:20]+ "...")
+                if j.receiver == public_key:
+                    print("Transaction no. " + str(index) + ".")
+                    if j.sender != str(0):
+                        print(" Sender: " + j.sender[:20] + "...")
                     else:
-                        print(" Sender: "+ j.sender)
+                        print(" Sender: " + j.sender)
                     print(" Amount: " + str(j.amount))
                     print(" Receiver: myself")
                     current_moneys += int(j.amount)
-                    index = index+1
+                    index = index + 1
         print("Current money: " + str(current_moneys))
 
-
-################################## DA VEDERE SE SERVE #####################################
-    def validate_chain(self, chain_to_validate):
-
-        # Validate genesis blocks
-        sha1 = hashlib.sha256("".join(self.__chain[0].transactions).encode()).hexdigest()
-        sha2 = hashlib.sha256("".join(chain_to_validate[0].transactions).encode()).hexdigest()
-        if sha1 != sha2:
-            return False
-
-        # Then we compare each block with its previous one
-        for x in range(1, len(chain_to_validate)):
-            if not self.validate_block(chain_to_validate[x], chain_to_validate[x - 1]):
-                return False
-
-        return True
-
-################################## DA VEDERE SE SERVE #####################################
-    def replace_chain(self, new_chain):
-
-        # We replace only if the new chain is bigger than the current one
-        if len(new_chain) <= len(self.__chain):
-            return False
-
-        # Validate the new chain
-        if not self.validate_chain(new_chain):
-            return False
-
-        # Add blocks
-        new_blocks = new_chain[len(self.__chain):]
-        for block in new_blocks:
-            self.add_block(block)
+    def exists_user(self, public):
+        public_str=str(public.n)+"_"+str(public.e)
+        for i in self.__chain:
+            for j in i.transactions:
+                if j.receiver == public_str or j.sender == public_str:
+                    return True
+        return False
 
 # # # # # # # # # # # # # Creazione della Blockchain # # # # # # # # # # # # #
 

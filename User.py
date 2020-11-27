@@ -104,19 +104,25 @@ def register():
     print("Your public key is:\n")
     print(str(public.n) + "_" + str(public.e) + "\n")
     print("Your private key is:\n")
-    key = [str(private.n), str(private.e), str(private.d)]
-    print(str(private.n) + " " + str(private.e) + " " + str(private.d) + "\n")
+    print(str(private.n) + "_" + str(private.e) + "_" + str(private.d) + "\n")
     print("Save your private key or you will not be able to access your wallet again!\n")
     return public, private
 
 
 def login(key):
-    k = key.split()
+    k = key.split("_")
     for i in range(len(k)):
         k[i] = int(k[i])
-    check_key = RSA.construct(k, consistency_check=True)
-    print(check_key.n)
-    return check_key.publickey(), check_key
+    check_key = RSA.construct((k[0], k[1], k[2]), consistency_check=True)
+    public_key = check_key.publickey()
+    if local_blockchain.exists_user(public_key):
+        print("Your public key is:\n")
+        print(str(public_key.n) + "_" + str(public_key.e) + "\n")
+        print("Your private key is:\n")
+        print(str(check_key.n) + "_" + str(check_key.e) + "_" + str(check_key.d) + "\n")
+        return public_key, check_key
+    else:
+        return None,None
 
 
 def send_money(private_key: Crypto.PublicKey.RSA.RsaKey, sender):
@@ -222,10 +228,17 @@ def update_blockchain():
 
     if not local_blockchain.last_block():
         # lo spazio dopo update serve come divisore in Listener.py
-        sock.sendto("update ".encode() + "empty ".encode()+ str(public_key.n).encode() + "_".encode() + str(public_key.e).encode(), ("224.0.0.0", 2000))
+        if type(public_key) != int:
+            sock.sendto("update ".encode() + "empty ".encode()+ str(public_key.n).encode() + "_".encode() + str(public_key.e).encode(), ("224.0.0.0", 2000))
+        else: # caso login
+            sock.sendto("update ".encode() + "empty ".encode()+ str(public_key).encode() + "_".encode() + str(public_key).encode(), ("224.0.0.0", 2000))
     else:
         # lo spazio dopo update serve come divisore in Listener.py
-        sock.sendto("update ".encode() + str(BlockChain.local_blockchain.last_block().index).encode()+ " ".encode() + str(public_key.n).encode() + "_".encode() + str(public_key.e).encode(), ("224.0.0.0", 2000))
+        if type(public_key) != int:
+            sock.sendto("update ".encode() + str(BlockChain.local_blockchain.last_block().index).encode()+ " ".encode() + str(public_key.n).encode() + "_".encode() + str(public_key.e).encode(), ("224.0.0.0", 2000))
+        else:
+            sock.sendto("update ".encode() + str(BlockChain.local_blockchain.last_block().index).encode()+ " ".encode() + str(public_key).encode() + "_".encode() + str(public_key).encode(), ("224.0.0.0", 2000))
+
     try:
         server_listener.join(1)
     except:

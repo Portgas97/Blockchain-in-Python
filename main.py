@@ -4,8 +4,7 @@ from ServerListener import BlockListener
 from BlockChain import local_blockchain, Blockchain
 import os
 import signal
-
-
+from Crypto.PublicKey import RSA
 
 print("---------------------------------------------------")
 print("|                                                 |")
@@ -17,7 +16,7 @@ print("---------------------------------------------------")
 op = input()
 
 if op == "register":
-    print("Registrazione in corso...")
+    print("Registration: operation started...")
     # print("DEBUG_LOG: chiamata a User.register()")
     public, private = User.register()
 
@@ -25,17 +24,20 @@ else:
     if op == "login":
         print("Insert your private key:")
         key = input()
+        User.update_blockchain()
         print("Login operation started...")
         # print("DEBUG_LOG: chiamata a User.login()")
         public, private = User.login(key)
+        if public is None and private is None:
+            print("Login: The key inserted doesn't exist")
+            print("Registration: operation started...")
+            public, private = User.register()
     else:
         print("Wrong operation! I'm exiting with error")
         os.kill(os.getpid(), signal.SIGTERM)
 
 # User.send_money(private, public)
 print("Checking Blockchain: operation started\n")
-
-
 
 if not User.exists_blockchain():
     print("Creating Genesis Block\n")
@@ -53,12 +55,8 @@ print("Checking Blockchain: operation terminated\n")
 listener = ThreadListener()
 listener.start()
 
-block_listener=BlockListener()
+block_listener = BlockListener()
 block_listener.start()
-
-
-
-
 
 while True:
     # DEBUG - each process prints the hash of the last block (in this case, the genesis block)
@@ -80,25 +78,30 @@ while True:
     # leggo l'operazione desiderata
     op = int(input())
 
-    if op > 4 or op < 1: # errore
+    if op > 4 or op < 1:  # errore
         print("I'm exiting with error")
         os.kill(os.getpid(), signal.SIGTERM)
 
-    elif op == 1: # send money
+    elif op == 1:  # send money
         # print("DEBUG_LOG: chiamata a send_money()")
         print("Send money started")
         User.send_money(private, public)
         # print("DEBUG_LOG: send_money() terminata")
 
-    elif op == 2: # show the blockchain
+    elif op == 2:  # show the blockchain
         print("Actual Blockchain:")
         local_blockchain.print()
 
-    elif op == 3: # history of transaction of the user
-    # Potremmo leggere anche la chiave pubblica e vedere il portafogli di un qualunque utente ???
+    elif op == 3:  # history of transaction of the user
         print("Transaction History:")
-        local_blockchain.print_user_transactions(public)
+        print("Insert public key:")
+        key_input = input()
+        public_key=key_input.split("_")
+        if key_input != "":
+            local_blockchain.print_user_transactions(RSA.construct((public_key[0],public_key[1])))
+        else:
+            local_blockchain.print_user_transactions(public)
 
-    elif op == 4: # exit
+    elif op == 4:  # exit
         print("########### FINE DEMO ###########")
         os.kill(os.getpid(), signal.SIGTERM)
