@@ -2,11 +2,19 @@ import hashlib
 from time import time
 from Transaction import Transaction
 
-# classe che rappresenta un blocco della blockchain
+# this is a class that represents a block entity in the blockchain structure
 class Block:
 
     def __init__(self, index, transactions:list, nonce, previous_hash, timestamp=time()):
-
+        """
+        Creates a block object 
+        Parameters:
+        - index (int) is the index in tha array
+        - transactions (array of Transactions)
+        - nonce (int) it needs for the Proof of Work definition
+        - previous_hash (str) hash of the previous block in the blockchain
+        - timestamp (float) instant of block creation
+        """
         self.index = index
         self.transactions = transactions
         self.nonce = nonce

@@ -1,11 +1,8 @@
-import time
-from threading import Thread, RLock
+from threading import Thread
 import socket
 import struct
-from Crypto.PublicKey import RSA
 import User
 import json
-import BlockChain
 from Block import Block
 from BlockChain import local_blockchain
 import hashlib
@@ -15,91 +12,92 @@ from Transaction import Transaction
 def set_buffer(tmp: str):
     User.buffer = tmp
 
-# verifica che la PoW sia corretta calcolando l'hash
-def validate_proof_of_work(block):
 
-    str_to_hash=""
+# this function verified if the proof of work is correct calculating the hash
+def validate_proof_of_work(block):
+    str_to_hash = ""
     for i in range(0, len(block.transactions)):
-        str_to_hash+=block.transactions[i].sender + str(block.transactions[i].amount) + \
-                                      block.transactions[i].receiver + str(block.transactions[i].timestamp)
+        str_to_hash += block.transactions[i].sender + str(block.transactions[i].amount) + \
+                       block.transactions[i].receiver + str(block.transactions[i].timestamp)
 
     str_to_hash += local_blockchain.last_block().block_hash + str(block.nonce)
 
     first_hash_256 = hashlib.sha256(str_to_hash.encode()).hexdigest()
     second_hash_256 = hashlib.sha256(first_hash_256.encode()).hexdigest()
-
-    if second_hash_256[:local_blockchain.difficulty] == local_blockchain.difficulty*"0":
+    if second_hash_256[:local_blockchain.difficulty] == local_blockchain.difficulty * "0":
         return True
     else:
         return False
 
-# DA AGGIUNGERE DESCRIZIONE DEL THREAD
+
+# This Thread listen to the answer given by other peers.
 class ServerThreadListener(Thread):
 
-    # metodo che rappresenta le attività compiute dal thread
+    # This method represents the operations of the thread
     def run(self):
-        # creazione del socket, utilizza IPv4, di tipo UDP
+        # creation of the socket:  IPv4 of type UDP
         sock1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 
-        # SO_REUSEADDR è u flag che dice al kernel di riusare un socket locale nello stato 'TIME_WAIT', senza aspettare per il timeout
-        # level = SOL_SOCKET implica che manipoliamo a livello di API
+        # SO_REUSEADDR  Indicates that the rules used in validating addresses supplied
+        #               in a bind call should allow reuse of local addresses
         sock1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-        # '' equivale a INADDR_ANY, si fa il bind su tutte le interfacce
+        # this bind uses '' that it's the same as INADDR_ANY
         sock1.bind(('', 2001))
 
-        # funzione che converte i valori passati in un bytes object secondo le modalità espresse da format
-        # s = char (4s significa 4 byte), l = long, = native byte order + standard size and alignment
-        # 224.0.0.0 è uno degli indirizzi adibiti al multicast
+        # this function translates the passed values to bytes with specified rules.
+        # s = char (4s means 4 byte), l = long, = native byte order + standard size and alignment
+        # 224.0.0.0 is a multicast ip.
         mreq1 = struct.pack("=4sl", socket.inet_aton("224.0.0.0"), socket.INADDR_ANY)
 
-        # aggiungiamo al multicast group
+        # adds the socket at the multicast group
         sock1.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq1)
 
-        # print("DEBUG_LOG: Listener torna ad eseguire while true, ascolto...")
-        buffer = sock1.recv(2**16).decode()
-        # print("RICEVUTO:"+ buffer)
+        # print("DEBUG_LOG: the thread is listening")
+        buffer = sock1.recv(2 ** 16).decode()
+        # print("receiver:"+ buffer)
         set_buffer(buffer)
         # print(User.buffer)
 
-# DA AGGIUNGERE DESCRIZIONE DEL THREAD
+
+# This Thread listen to the blocks just mined to others clients, validate them and adds them to the local blockchain
 class BlockListener(Thread):
-    # print("ciao")
 
     def run(self):
-        # creazione del socket, utilizza IPv4, di tipo UDP
+        # creation of the socket:  IPv4 of type UDP
         sock1 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 
-        # SO_REUSEADDR è u flag che dice al kernel di riusare un socket locale nello stato 'TIME_WAIT', senza aspettare per il timeout
-        # level = SOL_SOCKET implica che manipoliamo a livello di API
+        # SO_REUSEADDR  Indicates that the rules used in validating addresses supplied
+        #               in a bind call should allow reuse of local addresses
         sock1.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-        # '' equivale a INADDR_ANY, si fa il bind su tutte le interfacce
+        # this bind uses '' that it's the same as INADDR_ANY
         sock1.bind(('', 2002))
 
-        # funzione che converte i valori passati in un bytes object secondo le modalità espresse da format
-        # s = char (4s significa 4 byte), l = long, = native byte order + standard size and alignment
-        # 224.0.0.0 è uno degli indirizzi adibiti al multicast
+        # this function translates the passed values to bytes with specified rules.
+        # s = char (4s means 4 byte), l = long, = native byte order + standard size and alignment
+        # 224.0.0.0 is a multicast ip.
         mreq1 = struct.pack("=4sl", socket.inet_aton("224.0.0.0"), socket.INADDR_ANY)
 
-        # aggiungiamo al multicast group
+        # adds the socket at the multicast group
         sock1.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq1)
 
-        # print("DEBUG_LOG: Listener torna ad eseguire while true, ascolto...")
+        # print("DEBUG_LOG: the thread is listening")
 
-        #dual block contiene il blocco con che ha colliso con un altro blocco della blockchain. Si mantiene il blocco per scongiurare un attacco da Eve.
+        # dual block contains the block that has collapsed with another one of the blockchain.
+        # We maintain the block to invalidate the one sent by Eve.
         dual_block = None
 
         while True:
 
             buffer = sock1.recv(10240).decode()
 
-            block_received=json.loads(buffer)
+            block_received = json.loads(buffer)
 
             # print("BLOCK LISTENER")
             # print("block listener: " + buffer)
             if buffer == " ":
-                print("il buffer è vuoto")
+                print("empty buffer")
                 continue
 
             i_index = block_received['index']
@@ -119,28 +117,26 @@ class BlockListener(Thread):
                 new_transaction = Transaction(tmp_sender, tmp_amount, tmp_receiver, eval(tmp_sign), tmp_timestamp)
                 transactions.append(new_transaction)
 
-
-            if i_transactions["2"]["receiver"]==str(User.public_key.n)+"_"+str(User.public_key.e):
-                print("non rispondo a me stesso")
+            if i_transactions["2"]["receiver"] == str(User.public_key.n) + "_" + str(User.public_key.e):
+                print("i don't answer to myself")
                 continue
 
             new_block = Block(i_index, transactions, i_nonce, i_previous_hash, i_timestamp)
 
             if dual_block is not None:
                 if dual_block.block_hash == new_block.previous_hash:
-                    local_blockchain.remove_tail(new_block.index-1)
+                    local_blockchain.remove_tail(new_block.index - 1)
                     local_blockchain.add_block(dual_block)
                     dual_block = None
-
 
             print("validate proof of work: " + str(validate_proof_of_work(new_block)))
 
             block_interested = None
 
             try:
-                block_interested=local_blockchain.get_chain()[new_block.index]
-            except:
-                print("Il blocco non esiste, lo vado ad aggiungere alla blockchain")
+                block_interested = local_blockchain.get_chain()[new_block.index]
+            except IndexError:
+                print("the block arrived doesn't exist in the local blockchain, I'm adding it...")
                 if validate_proof_of_work(new_block):
                     local_blockchain.add_block(new_block)
                     continue
@@ -148,8 +144,8 @@ class BlockListener(Thread):
             if block_interested is not None and new_block.timestamp < block_interested.timestamp:
                 local_blockchain.remove_tail(new_block.index)
                 print("DEBUG BLOCK LISTENER")
-                result_add=local_blockchain.add_block(new_block)
-                dual_block=block_interested
+                local_blockchain.add_block(new_block)
+                dual_block = block_interested
                 continue
 
             dual_block = new_block

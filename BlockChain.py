@@ -5,29 +5,28 @@ from Transaction import Transaction
 from Crypto.PublicKey import RSA
 
 
-# vanno aggiunte le property, corretti gli underscore e scritte le altre funzioni. A cosa serve replace_chain?
 
 
 class Blockchain:
-    # numero di zeri per il Proof of Work
+    # number of zero for the Proof of Work
     difficulty = 2
-    # dati per il genesis block, come in Bitcoin
+    # data for the genesis block, like in Bitcoin
     initial_hash = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks"
 
     def __init__(self):
-        # transazioni non ancora minate
+        # transaction not already mined
         self.__current_transactions = []
         # Blockchain
         self.__chain = []
 
-    # funzione che crea il primo blocco nella blockchain
+    # function that creates the first block in the blockchain
     def create_genesis(self, public_key: RSA.RsaKey):
         genesis_block_transactions = self.__current_transactions
-        # print("DEBUG_LOG: chiamata a mine() dentro a create_genesis()")
+        # print("DEBUG_LOG: call function mine() inside create_genesis()")
         self.mine(public_key, genesis_block_transactions)
-        # print("DEBUG_LOG: mine() dentro a create_genesis() terminata")
+        # print("DEBUG_LOG: mine() inside create_genesis() terminated")
 
-    # aggiunge un blocco in coda alla blockchain, se valido
+    # if it's valid, this function appends a block at the end of the blockchain
     def add_block(self, block):
         if self.validate_block(block, self.last_block()):
             self.__chain.append(block)
@@ -35,30 +34,37 @@ class Blockchain:
             return True
         return False
 
-    # # # # # # # # # # funzioni di utilità # # # # # # # # # #
+    # # # # # # # # # # # # utilities # # # # # # # # # # # #
 
+    # get the last block in the blockchain, if exists
     def last_block(self):
         if not self.__chain:
             return []
         return self.__chain[-1]
 
+    # get the last transaction not already mined
     def last_transaction(self):
         return self.__current_transactions[-1]
 
+    # get the transactions not already mined
     def pending_transactions(self):
         return self.__current_transactions
 
+    # this function returns the entire blockchain
     def get_chain(self):
         return self.__chain
 
+    # this function returns the hash of the last block mined
     def get_last_hash(self):
         return self.__chain[-1].block_hash
 
+    # this function removes all the blocks from index to the end of the blockchain
     def remove_tail(self, index):
         self.__chain = self.__chain[0:index]
 
-    # crea una transazione e la inserisce in __current_transactions
-    def create_transaction(self, sender, amount, receiver, sign, timestamp=time()):
+    # creates a transaction and put it in the __current_transaction list
+    def create_transaction(self, sender, amount, receiver, sign, timestamp = time()):
+
         transaction = Transaction(sender, amount, receiver, sign, timestamp)
 
         if transaction.validate():
@@ -66,9 +72,12 @@ class Blockchain:
             return transaction, True
         return None, False
 
-    # funzione per la creazione di un blocco
+
+    # this function builds the reward transaction for the miner and try to generate
+    # a valid proof of work, then add the new block mined to the blockchain
     def mine(self, reward_address: RSA.RsaKey, new_block_transactions):
         last_block = self.last_block()
+
         if not last_block:
             previous_hash = self.initial_hash
             index = 0
@@ -76,11 +85,11 @@ class Blockchain:
             index = last_block.index + 1
             previous_hash = last_block.block_hash
 
-        # transazione di reward per il miner pari a 50 DSSCoin, non ha un mittente
+        # reward transaction amount = 50 DSSCoin, this transaction dosen't have a sender
         self.create_transaction(sender="0", amount=50, receiver=str(reward_address.n) + "_" + str(reward_address.e),
                                 sign=b"reward")
 
-        # definizione di mining
+        # mining definition is applied in this function called
         # print("DEBUG_LOG: chiamata a generate_proof_of_work() dentro a mine()")
         nonce = self.generate_proof_of_work(new_block_transactions)
         # print("DEBUG_LOG: generate_proof_of_work() dentro a mine() terminata
@@ -92,44 +101,53 @@ class Blockchain:
 
         return None
 
-    # cerca un valore (nonce) che concatenato con le informazioni nel blocco
-    # produce un hash con difficulty zero in testa
+
+    # looks for a value (nonce) that, concatenated with the data in a block,
+    # makes a hash with self.difficulty zeros ahead
     def generate_proof_of_work(self, block_transactions):
 
-        number = 0  # variabile per l'output
+        number = 0  # for the style of the output
         nonce = 0
 
-        print("Tentativi: ")
+        print("Attempts: ")
         while True:
-            # concatenazione dei parametri su cui calcolare l'hash
+            # concatenation of the parameters on which to calculate the hash
             if not local_blockchain.last_block():
                 string_to_hash = ""
+
                 for i in range(0, len(self.__current_transactions)):
                     string_to_hash += block_transactions[i].sender + str(block_transactions[i].amount) + \
                                       block_transactions[i].receiver + str(block_transactions[i].timestamp)
+
                 string_to_hash += self.initial_hash + str(nonce)
+
             else:
                 string_to_hash = ""
+
                 for i in range(0, len(self.__current_transactions)):
                     string_to_hash += block_transactions[i].sender + str(block_transactions[i].amount) + \
                                       block_transactions[i].receiver + str(block_transactions[i].timestamp)
+
                 string_to_hash += local_blockchain.last_block().block_hash + str(nonce)
 
-            # doppio hash come nel protocollo Bitcoin
+            # double hash as in Bitcoin protocol
             first_hash_256 = hashlib.sha256(string_to_hash.encode()).hexdigest()
             second_hash_256 = hashlib.sha256(first_hash_256.encode()).hexdigest()
 
+            # output
             print(str(number) + ": " + second_hash_256)
 
-            # definizione di Proof of Work
+            # Proof of Work definition
             if second_hash_256[:Blockchain.difficulty] == "0" * Blockchain.difficulty:
-                print("\n")
+                print("")
                 return nonce
 
             number += 1
             nonce += 1
 
-    # controlla se il blocco ricevuto è coerente con le informazioni possedute
+
+    # this function checks if the block received has consistency with the
+    # informations owned by the client
     def validate_block(self, current_block, previous_block: list):
         if not previous_block and current_block.index == 0:
             return True
@@ -145,6 +163,7 @@ class Blockchain:
         string_to_hash = ""
         for i in current_block.transactions:
             string_to_hash += str(i.sender) + str(i.amount) + str(i.receiver)
+
         string_to_hash += str(self.last_block().block_hash)
         string_to_hash += str(current_block.nonce)
         string_to_hash += str(current_block.timestamp)
@@ -155,15 +174,18 @@ class Blockchain:
 
         return True
 
-    # verifica la disponibilità nel wallet
+
+    # it verifies the wallet availability of the client and returns this value
     def count_money(self, public_key: RSA.RsaKey):
         amount = 0
+
         for i in self.__chain:
             for j in i.transactions:
                 if j.receiver == str(public_key.n) + "_" + str(public_key.e):
                     amount += int(j.amount)
                 if j.sender == str(public_key.n) + "_" + str(public_key.e):
                     amount -= int(j.amount)
+
         # print("DEBUG_COUNT MONEY"+str(amount))
         for i in self.__current_transactions:
             if i.receiver == str(public_key.n) + "_" + str(public_key.e):
@@ -171,36 +193,45 @@ class Blockchain:
             if i.sender == str(public_key.n) + "_" + str(public_key.e):
                 amount -= int(i.amount)
         # print("DEBUG_COUNT MONEY"+str(amount))
+
         return amount
 
-    # stampa una rappresentazione della blockchain corrente
+
+    # prints a representation of the current blockchain
     def print(self):
-        max_len = len("# Previous hash del blocco: " + str(self.initial_hash) + "  ")
+
+        max_len = len("# Previous hash of the block: " + str(self.initial_hash) + "  ")
+
         for i in self.__chain:
             info_to_be_printed = []
-            info_to_be_printed.append("# Blocco di indice: " + str(i.index))
-            info_to_be_printed.append("# Nonce del blocco: " + str(i.nonce))
+            info_to_be_printed.append("# Index of the block: " + str(i.index))
+            info_to_be_printed.append("# Nonce of the block: " + str(i.nonce))
+
             if i == local_blockchain.__chain[0]:
-                info_to_be_printed.append("# Previous hash del blocco: " + str(i.previous_hash))
+                info_to_be_printed.append("# Previous hash of the block: " + str(i.previous_hash))
             else:
-                info_to_be_printed.append("# Previous hash del blocco: " + str(i.previous_hash)[:64] + "...")
+                info_to_be_printed.append("# Previous hash of the block: " + str(i.previous_hash)[:64] + "...")
 
-            info_to_be_printed.append("# Timestamp del blocco: " + str(i.timestamp))
+            info_to_be_printed.append("# Timestamp of the block: " + str(i.timestamp))
 
-            # stampa cancelletti
+            # prints sharps
             print(max_len * "#")
-            # stampa blocco indice
+            # prints the block i
             print(info_to_be_printed[0] + (max_len - len(info_to_be_printed[0]) - 1) * " " + "#")
+
             for j in i.transactions:
                 print("#      " + "-" * (max_len - 9) + " #")
                 transactions_to_be_printed = []
+
                 if int(j.sender) == 0:
                     transactions_to_be_printed.append("#      Sender: " + str(j.sender))
                 else:
                     transactions_to_be_printed.append("#      Sender: " + str(j.sender)[:64] + "...")
+
                 transactions_to_be_printed.append("#      Amount: " + str(j.amount))
                 transactions_to_be_printed.append("#      Receiver: " + str(j.receiver)[:64] + "...")
                 transactions_to_be_printed.append("#      Timestamp: " + str(j.timestamp))
+
                 if int(j.sender) == 0:
                     transactions_to_be_printed.append("#      Sign: " + str(j.sign))
                 else:
@@ -218,14 +249,15 @@ class Blockchain:
                 print(transactions_to_be_printed[4] + (max_len - len(transactions_to_be_printed[4]) - 1) * " " + "#")
 
             print("#      " + "-" * (max_len - 9) + " #")
-            # stampa nonce blocco
+            # prints the nonce of the block
             print(info_to_be_printed[1] + (max_len - len(info_to_be_printed[1]) - 1) * " " + "#")
-            # stampa previous hash
+            # printf the previous hash of the block
             print(info_to_be_printed[2] + (max_len - len(info_to_be_printed[2]) - 1) * " " + "#")
-            # stampa hash
+            # prints the hash of the block
             print(info_to_be_printed[3] + (max_len - len(info_to_be_printed[3]) - 1) * " " + "#")
-            # stampa cancelletti
+            # printf sharps
             print(max_len * "#")
+
             if i != local_blockchain.last_block():
                 print(int(max_len / 2) * " " + "|")
                 print(int(max_len / 2) * " " + "|")
@@ -235,13 +267,15 @@ class Blockchain:
                 print(int(max_len / 2 - 1) * " " + "\\" + "|" + "/")
                 print(int(max_len / 2) * " " + "V")
             else:
-                print("Ended Blockchain")
+                print("Blockchain Ended")
 
-    # stampa la storia delle transazioni dell'utente
+
+    # this function prints the history of the user (with address 'public') transactions
     def print_user_transactions(self, public):
         public_key = str(public.n) + "_" + str(public.e)
         index = 1
         current_moneys = 0
+
         for i in self.__chain:
             for j in i.transactions:
                 if j.sender == public_key:
@@ -254,6 +288,7 @@ class Blockchain:
 
                 if j.receiver == public_key:
                     print("Transaction no. " + str(index) + ".")
+
                     if j.sender != str(0):
                         print(" Sender: " + j.sender[:20] + "...")
                     else:
@@ -262,16 +297,20 @@ class Blockchain:
                     print(" Receiver: myself")
                     current_moneys += int(j.amount)
                     index = index + 1
+
         print("Current money: " + str(current_moneys))
 
+
+    # check if a public key is consistent with the data in the blockchain
     def exists_user(self, public):
         public_str=str(public.n)+"_"+str(public.e)
+
         for i in self.__chain:
             for j in i.transactions:
                 if j.receiver == public_str or j.sender == public_str:
                     return True
         return False
 
-# # # # # # # # # # # # # Creazione della Blockchain # # # # # # # # # # # # #
+# # # # # # # # # # # # #  Blockchain Creation # # # # # # # # # # # # #
 
 local_blockchain = Blockchain()

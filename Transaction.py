@@ -5,11 +5,13 @@ class Transaction:
 
     def __init__(self, sender, amount, receiver, sign, timestamp=time.time()):
         """
-        Crea una nuova transazione.
-        Parametri:
+        Creates a transaction object
+        Parameters:
         - sender (str) è l'account del mittente
-        - amount (float) è l'ammontare da trasferire
+        - amount (int) è l'ammontare da trasferire
         - receiver (str) è l'account del destinatario
+        - timestamp (float)
+        - sign (bytes) sign of the hashed message with the user private key
         """
         self.sender = sender
         self.amount = amount
@@ -17,10 +19,9 @@ class Transaction:
         self.timestamp = timestamp
         self.sign = sign
 
+    # checks if a transaction is valid
+    # other checks are made in other files 
     def validate(self):
-        """
-        Controlla se una transazione è valida, ritorna un booleano
-        """
         if int(self.amount) < 0:
             return False
         return True
