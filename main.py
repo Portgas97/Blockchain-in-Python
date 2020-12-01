@@ -6,6 +6,27 @@ import os
 import signal
 from Crypto.PublicKey import RSA
 
+
+print("")
+print("DDDDDDDDDDDDD           SSSSSSSSSSSSSSS    SSSSSSSSSSSSSSS         CCCCCCCCCCCCC                   iiii  ")
+print("D::::::::::::DDD      SS:::::::::::::::S SS:::::::::::::::S     CCC::::::::::::C                  i::::i   ")
+print("D:::::::::::::::DD   S:::::SSSSSS::::::SS:::::SSSSSS::::::S   CC:::::::::::::::C                   iiii      ")
+print("DDD:::::DDDDD:::::D  S:::::S     SSSSSSSS:::::S     SSSSSSS  C:::::CCCCCCCC::::C                               ")
+print("  D:::::D    D:::::D S:::::S            S:::::S             C:::::C       CCCCCC   ooooooooooo   iiiiiiinnnn  nnnnnnnn ")
+print("  D:::::D     D:::::DS:::::S            S:::::S            C:::::C               oo:::::::::::oo i:::::in:::nn::::::::nn ")
+print("  D:::::D     D:::::D S::::SSSS          S::::SSSS         C:::::C              o:::::::::::::::o i::::in::::::::::::::nn ")
+print("  D:::::D     D:::::D  SS::::::SSSSS      SS::::::SSSSS    C:::::C              o:::::ooooo:::::o i::::inn:::::::::::::::n")
+print("  D:::::D     D:::::D    SSS::::::::SS      SSS::::::::SS  C:::::C              o::::o     o::::o i::::i  n:::::nnnn:::::n")
+print("  D:::::D     D:::::D            S:::::S            S:::::SC:::::C              o::::o     o::::o i::::i  n::::n    n::::n")
+print("  D:::::D    D:::::D             S:::::S            S:::::S C:::::C       CCCCCCo::::o     o::::o i::::i  n::::n    n::::n")
+print("DDD:::::DDDDD:::::D  SSSSSSS     S:::::SSSSSSSS     S:::::S  C:::::CCCCCCCC::::Co:::::ooooo:::::oi::::::i n::::n    n::::n")
+print("  D:::::D     D:::::D       SSSSSS::::S        SSSSSS::::S C:::::C              o::::o     o::::o i::::i  n::::n    n::::n")
+print("D:::::::::::::::DD   S::::::SSSSSS:::::SS::::::SSSSSS:::::S   CC:::::::::::::::Co:::::::::::::::oi::::::i n::::n    n::::n")
+print("D::::::::::::DDD     S:::::::::::::::SS S:::::::::::::::SS      CCC::::::::::::C oo:::::::::::oo i::::::i n::::n    n::::n")
+print("DDDDDDDDDDDDD         SSSSSSSSSSSSSSS    SSSSSSSSSSSSSSS           CCCCCCCCCCCCC   ooooooooooo   iiiiiiii nnnnnn    nnnnnn")
+print("")
+
+
 print("---------------------------------------------------")
 print("|                                                 |")
 print("| Welcome to DSSCoin, type \'register\' or \'login\': |")
